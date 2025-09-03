@@ -1,0 +1,24 @@
+# see "man logrotate" for details
+
+# rotate log files weekly
+{{ steam_logrotate_period }}
+
+# keep 4 weeks worth of backlogs
+{{ steam_logrotate_count }}
+
+# create new (empty) log files after rotating old ones
+{{ steam_logrotate_new_log }}
+
+# use date as a suffix of the rotated file
+{% if steam_logrotate_date_suffix %}
+dateext
+{% else %}
+#dateext
+{% endif %}
+
+# uncomment this if you want your log files compressed
+{% if steam_logrotate_compress %}
+compress
+{% else %}
+#compress
+{% endif %}

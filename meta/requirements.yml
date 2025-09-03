@@ -1,0 +1,9 @@
+---
+# Ansible galaxy packages
+
+collections:
+  # https://docs.ansible.com/ansible/latest/collections/community/general/
+  # ini_file
+  - community.general
+
+roles: []

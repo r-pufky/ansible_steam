@@ -1,0 +1,80 @@
+---
+###############################################################################
+# Install Wine with xvfb
+###############################################################################
+# xvfb provided for a lightweight window manager.
+#
+# Reference:
+# * https://wiki.winehq.org/Debian
+# * https://wiki.winehq.org/Winetricks
+# * https://tecadmin.net/install-wine-on-ubuntu/
+
+
+- name: 'install wine | install base packages'
+  ansible.builtin.apt:
+    name:  '{{ item }}'
+    state: 'latest'
+    install_recommends: true
+  loop:
+    - '{{ wine_default_core_packages }}'
+    - '{{ wine_default_i386_packages }}'
+
+- name: 'install wine | add wine repository key'
+  ansible.builtin.apt_key:
+    url:   'https://dl.winehq.org/wine-builds/winehq.key'
+    state: 'present'
+
+- name: 'install wine | add wine repo'
+  ansible.builtin.apt_repository:
+    repo:     '{{ steam_default_wine_repo }}'
+    filename: 'wine'
+    state:    'present'
+    update_cache: true
+
+- name: 'install wine | set CAP_NET_RAW to {{ steam_wine_raw_network_enable }}'
+  ansible.builtin.debconf:
+    name:     'wine-{{ steam_wine_release }}{{ item }}'
+    question: 'wine/setcaps'
+    value:    '{{ steam_wine_raw_network_enable|bool|string|lower }}'
+    vtype:    'boolean'
+  loop:
+    - ''
+    - '-amd64'
+    - '-i386'
+
+- name: 'install wine | install wine {{ steam_wine_release }}'
+  ansible.builtin.apt:
+    name:  'winehq-{{ steam_wine_release }}'
+    state: 'latest'
+    install_recommends: true
+
+- name: 'install wine | updating wine (may take up to 5 minutes on first run)'
+  ansible.builtin.debug:
+    msg: |
+      winehq may potentially take ~5 minutes on first boot to launch, due to
+      blocking on boot events:
+
+       _"0014:err:ole:get_local_server_stream Failed: 80004002"_
+       _"__wine_kernel_init boot event wait timed out"_
+
+      Subsequent boots will not see the delay. We can mitigate this by updating wine
+      before our first use.
+
+      wineboot --update
+      xvfb-run --autoservernum wineboot --update
+
+      This is a suspected issue with the GCC build toolchain, but has not been
+      resolved yet.
+
+      Reference:
+      * https://ubuntuforums.org/archive/index.php/t-1499348.html
+      * https://bugs.winehq.org/show_bug.cgi?id=38653
+
+- name: 'install wine | updating wine' # noqa no-changed-when always execute
+  ansible.builtin.command: '/usr/bin/wineboot --update'
+  args:
+    chdir: '/home/{{ steam_user }}'
+  become_user: '{{ steam_user }}'
+  # Reference: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
+  vars:
+    ansible_ssh_pipelining: true

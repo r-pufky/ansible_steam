@@ -1,0 +1,25 @@
+---
+###############################################################################
+# Left 4 Dead Mods Install
+###############################################################################
+# Install Left 4 Dead Mods
+#
+# Args:
+#   _steam_l4d_dir: str install location of l4d.
+#
+# Reference:
+# * https://wiki.alliedmods.net/Installing_SourceMod
+# * https://wiki.alliedmods.net/Installing_Metamod:Source
+
+- ansible.builtin.include_tasks: roles/steam/tasks/sourcemod/main.yml
+  vars:
+    steam_sourcemod_source:   '{{ steam_l4d_sourcemod }}'
+    steam_sourcemod_game_dir: '{{ _steam_l4d_dir }}'
+    steam_sourcemod_admins:   '{{ steam_l4d_admins }}'
+    steam_sourcemod_service:  'l4d.service'
+
+- ansible.builtin.include_tasks: roles/steam/tasks/metamod/main.yml
+  vars:
+    steam_metamod_source:   '{{ steam_l4d_metamod }}'
+    steam_metamod_game_dir: '{{ _steam_l4d_dir }}'
+    steam_metamod_service:  'l4d.service'

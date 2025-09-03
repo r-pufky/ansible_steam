@@ -1,0 +1,76 @@
+---
+###############################################################################
+# Default Steam Package Dependencies
+###############################################################################
+# Default required packages for Steam install.
+#
+# '-debug' requires GDB and c++6 for `srcds_run` which prevents PID error and
+# auto reboot every 10 seconds.
+#
+# Reference:
+# *  https://forums.alliedmods.net/showthread.php?t=300118
+#
+# 'SDL manager'
+#
+# Reference:
+# * https://github.com/ValveSoftware/steam-for-linux/issues/7036
+
+# x86_64 packages for steam.
+steam_default_core_packages:
+  - 'lib32gcc-s1'
+  - 'libsdl2-2.0-0' # SDL support
+  - 'steamcmd'
+  - 'gdb'           # -debug support
+  - 'libc6'         # -debug support
+
+# x86 (i386) packages for steam.
+steam_default_i386_packages:
+  - 'libsdl2-2.0-0:i386' # SDL support
+  - 'libc6:i386'         # -debug support
+
+###############################################################################
+# Default Wine Package Dependencies
+###############################################################################
+# Default required packages for Wine install.
+
+# Repository to use for wine install
+steam_default_wine_repo: 'deb https://dl.winehq.org/wine-builds/debian/ {{ ansible_distribution_release }} main'
+
+# x86_64 packages for wine.
+wine_default_core_packages:
+  - 'gnupg2'
+  - 'xvfb'
+  - 'winbind'
+  - 'libasound2-plugins'
+
+# x86 (i386) packages for wine.
+wine_default_i386_packages:
+  - 'libasound2-plugins:i386'
+
+###############################################################################
+# Default Steam User Group
+###############################################################################
+# Default group settings if an Steam user is force created.
+
+steam_default_group:
+  name: 'steam'
+  gid:  51000
+
+###############################################################################
+# Default Steam User Account
+###############################################################################
+# Default user settings if an Steam user is force created.
+#
+# Logins are disabled.
+
+steam_default_user:
+    name:            'steam'
+    group:           'steam'
+    uid:             51000
+    shell:           '/bin/bash'
+    home:            '/home/steam'
+    create_home:     true
+    password:        '!'
+    password_lock:   true
+    update_password: 'always'
+    expires:         -1

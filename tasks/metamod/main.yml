@@ -1,0 +1,23 @@
+---
+###############################################################################
+# Meta Mod Install
+###############################################################################
+# Install meta mod to target game installation.
+#
+# Args:
+#   steam_metamod_source: str source location of metamod tarball.
+#   steam_metamod_game_dir: str target steamcmd game install location.
+#   steam_metamod_service: str service handler to trigger on updates.
+#
+# Reference:
+# * https://wiki.alliedmods.net/Installing_Metamod:Source
+
+- name: 'metamod | install'
+  ansible.builtin.unarchive:
+    src:     '{{ steam_metamod_source }}'
+    dest:    '{{ steam_metamod_game_dir }}'
+    owner:   '{{ steam_user }}'
+    group:   '{{ steam_group }}'
+    creates: '{{ steam_metamod_game_dir }}/addons/metamod/bin'
+  when: steam_metamod_source|length > 0
+  notify: 'restart {{ steam_metamod_service }}'

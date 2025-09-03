@@ -1,0 +1,135 @@
+---
+###############################################################################
+# Conan Exiles Install
+###############################################################################
+# Conan Exiles dedicated server
+#
+# INI files contain duplicate keys (violating the INI standard). Files are
+# deleted and re-created with exlcusive disabled to prevent infinite duplicate
+# key growth in configs.
+#
+# Reference:
+# * https://r-pufky.github.io/docs/game/conan/setup.html
+# * https://github.com/r-pufky/steam/blob/master/docs/examples/conan-exiles.md
+# * https://forums.funcom.com/t/hosting-a-dedicated-server-for-isle-of-siptah/136857
+
+- name: 'conan | generate install configuration'
+  ansible.builtin.set_fact:
+    _steam_conan_mods_dir:     '{{ steam_conan_dir }}/ConanSandbox/Mods'
+    _steam_conan_settings_dir: '{{ steam_conan_dir }}/ConanSandbox/Saved/Config/WindowsServer'
+    _steam_conan_save_dir:     '{{ steam_conan_dir }}/ConanSandbox/Saved'
+    _steam_conan_systemd:
+      description:       'Conan Exiles Dedicated Server'
+      after:             'network.target'
+      user:              '{{ steam_user }}'
+      group:             '{{ steam_group }}'
+      working_directory: '{{ steam_conan_dir }}'
+      environment:
+        - 'WINEARCH=win64'
+        - 'WINEPREFIX=/home/{{ steam_user }}/.wine64'
+        - 'LD_LIBRARY_PATH={{ steam_conan_dir }}:{{ steam_conan_dir }}/bin'
+      exec_start_pre:    '/usr/games/steamcmd +@sSteamCmdForcePlatformType {{ steam_default_conan_platform }} +force_install_dir {{ steam_conan_dir }} +login anonymous +app_update {{ steam_default_conan_app_id }} {{ steam_conan_app_extras }} +quit'
+      exec_start:        '/usr/bin/xvfb-run --auto-servernum wine64 {{ steam_conan_dir }}/ConanSandbox/Binaries/Win64/ConanSandboxServer-Win64-Test.exe -nosteamclient -game -server -log'
+      pid_file:          '/var/run/conan.pid'
+      exec_stop:         '/bin/kill -s SIGINT $MAINPID'
+      timeout_start_sec: 'infinity'
+      timeout_stop_sec:  60
+      restart:           'always'
+      limit_no_file:     4096
+      wanted_by:         'multi-user.target'
+
+- name: 'conan | create server directory'
+  ansible.builtin.file:
+    path:  '{{ steam_conan_dir }}'
+    owner: '{{ steam_user }}'
+    group: '{{ steam_group }}'
+    mode:  0755
+    state: 'directory'
+
+- ansible.builtin.import_tasks: roles/steam/tasks/steamcmd/update_steam.yml
+  vars:
+    steam_platform: '{{ steam_default_conan_platform }}'
+  when: steam_conan_update_steamcmd
+
+- ansible.builtin.import_tasks: roles/steam/tasks/steamcmd/update_server.yml
+  vars:
+    steam_platform:   '{{ steam_default_conan_platform }}'
+    steam_dir:        '{{ steam_conan_dir }}'
+    steam_app_id:     '{{ steam_default_conan_app_id }}'
+    steam_app_extras: '{{ steam_conan_app_extras }}'
+    steam_app_beta:   ''
+  when: steam_conan_update_server
+
+- name: 'conan | IGNORE .ini type conversion warnings'
+  ansible.builtin.debug:
+    msg: |
+      INI files in conan are unquoted, which lead to Ansible type-conversion
+      warnings. These can be ignored.
+
+- ansible.builtin.import_tasks: roles/steam/tasks/steamcmd/atomic_ini.yml
+  vars:
+    steam_atomic_ini_game:     'conan'
+    steam_atomic_ini_base_dir: '{{ _steam_conan_settings_dir }}'
+    steam_atomic_ini_config_file: 'Engine.ini'
+    steam_atomic_ini_no_extra_spaces: true
+    steam_atomic_ini_owner:    '{{ steam_user }}'
+    steam_atomic_ini_group:    '{{ steam_group }}'
+    steam_atomic_ini_mode:     0640
+    steam_atomic_ini_config:   '{{ steam_conan_settings_engine }}'
+    steam_atomic_ini_handler:  'restart conan.service'
+  when: steam_conan_settings_engine
+
+- ansible.builtin.import_tasks: roles/steam/tasks/steamcmd/atomic_ini.yml
+  vars:
+    steam_atomic_ini_game:     'conan'
+    steam_atomic_ini_base_dir: '{{ _steam_conan_settings_dir }}'
+    steam_atomic_ini_config_file: 'Game.ini'
+    steam_atomic_ini_no_extra_spaces: true
+    steam_atomic_ini_owner:    '{{ steam_user }}'
+    steam_atomic_ini_group:    '{{ steam_group }}'
+    steam_atomic_ini_mode:     0640
+    steam_atomic_ini_config:   '{{ steam_conan_settings_game }}'
+    steam_atomic_ini_handler:  'restart conan.service'
+  when: steam_conan_settings_game
+
+- ansible.builtin.import_tasks: roles/steam/tasks/steamcmd/atomic_ini.yml
+  vars:
+    steam_atomic_ini_game:     'conan'
+    steam_atomic_ini_base_dir: '{{ _steam_conan_settings_dir }}'
+    steam_atomic_ini_config_file: 'ServerSettings.ini'
+    steam_atomic_ini_no_extra_spaces: true
+    steam_atomic_ini_owner:    '{{ steam_user }}'
+    steam_atomic_ini_group:    '{{ steam_group }}'
+    steam_atomic_ini_mode:     0640
+    steam_atomic_ini_config:   '{{ steam_conan_settings_server }}'
+    steam_atomic_ini_handler:  'restart conan.service'
+  when: steam_conan_settings_server
+
+- name: 'conan | create service'
+  ansible.builtin.template:
+    src:   'systemd.service.j2'
+    dest:  '/etc/systemd/system/conan.service'
+    owner: 'root'
+    group: 'root'
+    mode:  0755
+  vars:
+    systemd: '{{ _steam_conan_systemd }}'
+  notify: 'restart conan.service'
+
+- name: 'conan | create backup directory'
+  ansible.builtin.file:
+    path:  '{{ steam_conan_backup_dir }}'
+    owner: '{{ steam_user }}'
+    group: '{{ steam_group }}'
+    mode:  0755
+    state: 'directory'
+  when: steam_conan_backup_dir|length > 0
+
+- name: 'conan | backup database, settings, and mods daily'
+  ansible.builtin.cron:
+    name:         'backup conan databases daily'
+    special_time: 'daily'
+    user:         '{{ steam_user }}'
+    job:          '/usr/bin/tar -cvJf "{{ steam_conan_backup_dir }}/$(date --iso-8601).tar.xz" "{{ _steam_conan_save_dir }}" "{{ _steam_conan_mods_dir }}"'
+    state:        'present'
+  when: steam_conan_backup_dir|length > 0

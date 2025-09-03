@@ -1,0 +1,22 @@
+---
+###############################################################################
+# Update SteamCMD
+###############################################################################
+#
+# Args:
+#   steam_target_platform: platform install type (linux, windows).
+
+- name: 'update steam | (may take a while)'
+  ansible.builtin.debug:
+    msg: |
+      Steam is being updated. This may take a few minutes.
+
+- name: 'update steam | updating steamcmd' # noqa no-changed-when always execute
+  ansible.builtin.command: '/usr/games/steamcmd +@sSteamCmdForcePlatformType {{ _platform }} +login anonymous +quit'
+  args:
+    chdir: '/home/{{ steam_user }}'
+  become_user: '{{ steam_user }}'
+  # Reference: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
+  vars:
+    ansible_ssh_pipelining: true
+    _platform: '{{ steam_platform }}'

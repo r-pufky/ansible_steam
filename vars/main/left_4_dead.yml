@@ -1,0 +1,10 @@
+---
+###############################################################################
+# Left 4 Dead Defaults
+###############################################################################
+
+# Steam application ID.
+steam_default_l4d_app_id: 222840
+
+# @sSteamCmdForcePlatformType (linux, windows)
+steam_default_l4d_platform: 'linux'

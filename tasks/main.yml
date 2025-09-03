@@ -1,0 +1,22 @@
+---
+###############################################################################
+# Steam Tasks
+###############################################################################
+# Developer Notes:
+# Use game names for directory and unique file names (excluding main) within:
+# duplicate file names in a role will lead to nondeterministic behavior.
+
+- ansible.builtin.include_tasks: manage_users.yml
+- ansible.builtin.include_tasks: core.yml
+- ansible.builtin.include_tasks: steamcmd/main.yml
+- ansible.builtin.include_tasks: wine/main.yml
+- ansible.builtin.include_tasks: conan_exiles/main.yml
+  when: steam_conan_enable
+- ansible.builtin.include_tasks: left_4_dead/main.yml
+  when: steam_l4d_enable
+- ansible.builtin.include_tasks: left_4_dead_2/main.yml
+  when: steam_l4d2_enable
+- ansible.builtin.include_tasks: satisfactory/main.yml
+  when: steam_satisfactory_enable
+- ansible.builtin.include_tasks: seven_days_to_die/main.yml
+  when: steam_7days_enable

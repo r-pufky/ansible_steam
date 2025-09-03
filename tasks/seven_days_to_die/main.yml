@@ -1,0 +1,79 @@
+---
+###############################################################################
+# 7 Days to Die Install
+###############################################################################
+#
+# Reference:
+# * https://r-pufky.github.io/docs/game/7days/index.html
+
+- name: '7days | generate install configuration'
+  ansible.builtin.set_fact:
+    _steam_7days_systemd:
+      description:       '7days Dedicated Server'
+      after:             'network.target'
+      user:              '{{ steam_user }}'
+      group:             '{{ steam_group }}'
+      working_directory: '{{ steam_7days_dir }}'
+      environment:
+        - 'LD_LIBRARY_PATH={{ steam_7days_dir }}:{{ steam_7days_dir }}/bin'
+      exec_start_pre:    '/usr/games/steamcmd +@sSteamCmdForcePlatformType {{ steam_default_7days_platform }} +force_install_dir {{ steam_7days_dir }} +login anonymous +app_update {{ steam_default_7days_app_id }} {{ steam_7days_app_extras }} +quit'
+      exec_start:        '{{ steam_7days_dir }}/startserver.sh -configfile={{ steam_7days_dir }}/serverconfig.xml'
+      pid_file:          '/var/run/7days.pid'
+      exec_reload:       '/bin/kill -s HUP $MAINPID'
+      exec_stop:         '/bin/kill -s QUIT $MAINPID'
+      timeout_start_sec: 'infinity'
+      timeout_stop_sec:  60
+      restart:           'always'
+      limit_no_file:     4096
+      wanted_by:         'multi-user.target'
+
+- name: '7days | create server directory'
+  ansible.builtin.file:
+    path:  '{{ steam_7days_dir }}'
+    owner: '{{ steam_user }}'
+    group: '{{ steam_group }}'
+    mode:  0755
+    state: 'directory'
+
+- ansible.builtin.import_tasks: roles/steam/tasks/update_steam.yml
+  vars:
+    steam_platform: '{{ steam_7days_platform }}'
+  when: steam_7days_update_steamcmd
+
+- ansible.builtin.import_tasks: roles/steam/tasks/update_server.yml
+  vars:
+    steam_platform:   '{{ steam_7days_platform }}'
+    steam_dir:        '{{ steam_7days_dir }}'
+    steam_app_id:     '{{ steam_7days_app_id }}'
+    steam_app_extras: '{{ steam_7days_app_extras }}'
+  when: steam_7days_update_server
+
+- name: '7days | set server config'
+  ansible.builtin.template:
+    src:   'seven_days_to_die/serverconfig.xml.j2'
+    dest:  '{{ steam_7days_dir }}/serverconfig.xml'
+    owner: '{{ steam_user }}'
+    group: '{{ steam_group }}'
+    mode:  0600
+  notify: 'restart 7days.service'
+
+- name: '7days | set server admin config'
+  ansible.builtin.template:
+    src:   'seven_days_to_die/serveradmin.xml.j2'
+    dest:  '{{ steam_7days_dir }}/Saves/serveradmin.xml'
+    owner: '{{ steam_user }}'
+    group: '{{ steam_group }}'
+    mode:  0600
+  when: steam_7days_server_admin_enable
+  notify: 'restart 7days.service'
+
+- name: '7days | create service'
+  ansible.builtin.template:
+    src:   'systemd.service.j2'
+    dest:  '/etc/systemd/system/7days.service'
+    owner: 'root'
+    group: 'root'
+    mode:  0755
+  vars:
+    systemd: '{{ steam_7days_systemd }}'
+  notify: 'restart 7days.service'

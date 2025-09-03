@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<ServerSettings>
+  <property name="ServerName" value="{{ steam_7days_server_name }}"/>
+  <property name="ServerDescription" value="{{ steam_7days_server_description }}"/>
+  <property name="ServerWebsiteURL" value="{{ steam_7days_server_website_url }}"/>
+  <property name="ServerPassword" value="{{ steam_7days_server_password }}"/>
+  <property name="ServerLoginConfirmationText" value="{{ steam_7days_server_login_confirmation_text }}"/>
+
+  <property name="ServerPort" value="{{ steam_7days_server_port }}"/>
+  <property name="ServerVisibility" value="{{ steam_7days_server_visibility }}"/>
+  <property name="ServerDisabledNetworkProtocols" value="{{ steam_7days_server_disabled_network_protocols }}"/>
+  <property name="ServerMaxWorldTransferSpeedKiBs" value="{{ steam_7days_server_max_world_transfer_speed_kibs }}"/>
+
+  <property name="ServerMaxPlayerCount" value="{{ steam_7days_server_max_player_count }}"/>
+  <property name="ServerReservedSlots" value="{{ steam_7days_server_reserved_slots }}"/>
+  <property name="ServerReservedSlotsPermission" value="{{ steam_7days_server_reserved_slots_permission }}"/>
+  <property name="ServerAdminSlots" value="{{ steam_7days_server_admin_slots }}"/>
+  <property name="ServerAdminSlotsPermission" value="{{ steam_7days_server_admin_slots_permission }}"/>
+
+  <property name="ControlPanelEnabled" value="{{ steam_7days_control_panel_enabled }}"/>
+  <property name="ControlPanelPort" value="{{ steam_7days_control_panel_port }}"/>
+  <property name="ControlPanelPassword" value="{{ steam_7days_control_panel_password }}"/>
+
+  <property name="TelnetEnabled" value="{{ steam_7days_telnet_enabled }}"/>
+  <property name="TelnetPort" value="{{ steam_7days_telnet_port }}"/>
+  <property name="TelnetPassword" value="{{ steam_7days_telnet_password }}"/>
+  <property name="TelnetFailedLoginLimit" value="{{ steam_7days_telnet_failed_login_limit }}"/>
+  <property name="TelnetFailedLoginsBlocktime" value="{{ steam_7days_telnet_failed_logins_blocktime }}"/>
+
+  <property name="TerminalWindowEnabled" value="{{ steam_7days_terminal_window_enabled }}"/>
+
+  <property name="AdminFileName" value="{{ steam_7days_admin_filename }}"/>
+  {% if steam_7days_user_data_folder|length > 0 %}
+  <property name="UserDataFolder" value="{{ steam_7days_user_data_folder }}"/>
+  {% endif %}
+  {% if steam_7days_save_game_folder|length > 0 %}
+  <property name="SaveGameFolder" value="{{ steam_7days_save_game_folder }}"/>
+  {% endif %}
+
+  <property name="EACEnabled" value="{{ steam_7days_eac_enabled }}"/>
+  <property name="HideCommandExecutionLog" value="{{ steam_7days_hide_command_execution_log }}"/>
+  <property name="MaxUncoveredMapChunksPerPlayer" value="{{ steam_7days_max_uncovered_map_chunks_per_player }}"/>
+  <property name="PersistentPlayerProfiles" value="{{ steam_7days_persistent_player_profiles }}"/>
+
+  <property name="GameWorld" value="{{ steam_7days_game_world }}"/>
+  <property name="WorldGenSeed" value="{{ steam_7days_world_gen_seed }}"/>
+  <property name="WorldGenSize" value="{{ steam_7days_world_gen_size }}"/>
+  <property name="GameName" value="{{ steam_7days_game_name }}"/>
+  <property name="GameMode" value="{{ steam_7days_game_mode }}"/>
+
+  <property name="GameDifficulty" value="{{ steam_7days_game_difficulty }}"/>
+  <property name="BlockDamagePlayer" value="{{ steam_7days_block_damage_player }}"/>
+  <property name="BlockDamageAI" value="{{ steam_7days_block_damage_ai }}"/>
+  <property name="BlockDamageAIBM" value="{{ steam_7days_block_damage_aibm }}"/>
+  <property name="XPMultiplier" value="{{ steam_7days_xp_multiplier }}"/>
+  <property name="PlayerSafeZoneLevel" value="{{ steam_7days_player_safe_zone_level }}"/>
+  <property name="PlayerSafeZoneHours" value="{{ steam_7days_player_safe_zone_hours }}"/>
+
+  <property name="BuildCreate" value="{{ steam_7days_build_create }}"/>
+  <property name="DayNightLength" value="{{ steam_7days_day_night_length }}"/>
+  <property name="DayLightLength" value="{{ steam_7days_day_light_length }}"/>
+  <property name="DropOnDeath" value="{{ steam_7days_drop_on_death }}"/>
+  <property name="DropOnQuit" value="{{ steam_7days_drop_on_quit }}"/>
+  <property name="BedrollDeadZoneSize" value="{{ steam_7days_bedroll_deadzone_size }}"/>
+  <property name="BedrollExpiryTime" value="{{ steam_7days_bedroll_expiry_time }}"/>
+
+  <property name="MaxSpawnedZombies" value="{{ steam_7days_max_spawned_zombies }}"/>
+  <property name="MaxSpawnedAnimals" value="{{ steam_7days_max_spawned_animals }}"/>
+  <property name="ServerMaxAllowedViewDistance" value="{{ steam_7days_server_max_allowed_view_distance }}"/>
+
+  <property name="EnemySpawnMode" value="{{ steam_7days_enemy_spawn_mode }}"/>
+  <property name="EnemyDifficulty" value="{{ steam_7days_enemy_difficulty }}"/>
+  <property name="ZombieMove" value="{{ steam_7days_zombie_move }}"/>
+  <property name="ZombieMoveNight" value="{{ steam_7days_zombie_move_night }}"/>
+  <property name="ZombieFeralMove" value="{{ steam_7days_zombie_feral_move }}"/>
+  <property name="ZombieBMMove" value="{{ steam_7days_zombie_bm_move }}"/>
+  <property name="BloodMoonFrequency" value="{{ steam_7days_blood_moon_frequency }}"/>
+  <property name="BloodMoonRange" value="{{ steam_7days_blood_moon_range }}"/>
+  <property name="BloodMoonWarning" value="{{ steam_7days_blood_moon_warning }}"/>
+  <property name="BloodMoonEnemyCount" value="{{ steam_7days_blood_moon_enemy_count }}"/>
+
+  <property name="LootAbundance" value="{{ steam_7days_loot_abundance }}"/>
+  <property name="LootRespawnDays" value="{{ steam_7days_loot_respawn_days }}"/>
+  <property name="AirDropFrequency" value="{{ steam_7days_air_drop_frequency }}"/>
+  <property name="AirDropMarker" value="{{ steam_7days_air_drop_marker }}"/>
+
+  <property name="PartySharedKillRange" value="{{ steam_7days_party_shared_kill_range }}"/>
+  <property name="PlayerKillingMode" value="{{ steam_7days_player_killing_mode }}"/>
+
+  <property name="LandClaimCount" value="{{ steam_7days_land_claim_count }}"/>
+  <property name="LandClaimSize" value="{{ steam_7days_land_claim_size }}"/>
+  <property name="LandClaimDeadZone" value="{{ steam_7days_land_claim_deadzone }}"/>
+  <property name="LandClaimExpiryTime" value="{{ steam_7days_land_claim_expiry_time }}"/>
+  <property name="LandClaimDecayMode" value="{{ steam_7days_land_claim_decay_mode }}"/>
+  <property name="LandClaimOnlineDurabilityModifier" value="{{ steam_7days_land_claim_online_durability_modifier }}"/>
+  <property name="LandClaimOfflineDurabilityModifier" value="{{ steam_7days_land_claim_offline_durability_modifier }}"/>
+  <property name="LandClaimOfflineDelay" value="{{ steam_7days_land_claim_offline_delay }}"/>
+  <property name="TwitchServerPermission" value="{{ steam_7days_twitch_server_permission }}"/>
+  <property name="TwitchBloodMoonAllowed" value="{{ steam_7days_blood_moon_allowed }}"/>
+</ServerSettings>

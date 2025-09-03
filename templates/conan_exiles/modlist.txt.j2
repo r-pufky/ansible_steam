@@ -1,0 +1,5 @@
+{% if steam_conan_mods|length > 0 %}
+{% for mod in steam_conan_mods %}
+*{{ mod }}
+{% endfor %}
+{% endif %}

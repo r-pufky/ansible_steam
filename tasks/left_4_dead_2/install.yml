@@ -1,0 +1,100 @@
+---
+###############################################################################
+# Left 4 Dead 2 Install
+###############################################################################
+# Install location is relative to base installation directory. This is **not**
+# customizable, contary to many mis-documented Internet configurations.
+#
+# Valve disabled 'sv_password' for L4D2; will get prompts but login will fail.
+# Use group management & sv_search_key to restrict to a group of players or
+# remove server advertisement and direct connect.
+#
+# server.cfg must be located in left4dead2/cfg and can only be referenced on
+# start using the relative path from that location (server.cfg).
+#
+# Generates:
+#   _steam_l4d2_dir: str install location of l4d2.
+#
+# Reference:
+# * https://old.reddit.com/r/l4d2/comments/1jkrr6/dedicated_server_problems/
+# * https://forums.srcds.com/viewtopic/17642
+
+- name: 'l4d2 | generate install configuration'
+  ansible.builtin.set_fact:
+    _steam_l4d2_dir: '{{ steam_l4d2_dir }}/left4dead2'
+    _steam_l4d2_systemd:
+      description:       'L4D2 Dedicated Server'
+      after:             'network.target'
+      user:              '{{ steam_user }}'
+      group:             '{{ steam_group }}'
+      working_directory: '{{ steam_l4d2_dir }}'
+      environment:
+        - 'LD_LIBRARY_PATH={{ steam_l4d2_dir }}:{{ steam_l4d2_dir }}/bin'
+      exec_start_pre:    '/usr/games/steamcmd +@sSteamCmdForcePlatformType {{ steam_default_l4d2_platform }} +force_install_dir {{ steam_l4d2_dir }} +login anonymous +app_update {{ steam_default_l4d2_app_id }} {{ steam_l4d2_app_extras }} +quit'
+      exec_start:        '{{ steam_l4d2_dir }}/srcds_run -console -game left4dead2 -map c1m1_hotel -port 27015 +maxplayers 4 -nohltv +exec server.cfg -pidfile /tmp/l4d2.pid'
+      timeout_start_sec: 'infinity'
+      restart:           'always'
+      limit_no_file:     4096
+      wanted_by:         'multi-user.target'
+
+- name: 'l4d2 | create server directory'
+  ansible.builtin.file:
+    path:  '{{ steam_l4d2_dir }}'
+    owner: '{{ steam_user }}'
+    group: '{{ steam_group }}'
+    mode:  0755
+    state: 'directory'
+
+- ansible.builtin.import_tasks: roles/steam/tasks/steamcmd/update_steam.yml
+  vars:
+    steam_platform: '{{ steam_default_l4d2_platform }}'
+  when: steam_l4d2_update_steamcmd
+
+- ansible.builtin.import_tasks: roles/steam/tasks/steamcmd/update_server.yml
+  vars:
+    steam_platform:   '{{ steam_default_l4d2_platform }}'
+    steam_dir:        '{{ steam_l4d2_dir }}'
+    steam_app_id:     '{{ steam_default_l4d2_app_id }}'
+    steam_app_extras: '{{ steam_l4d2_app_extras }}'
+    steam_app_beta:   ''
+  when: steam_l4d2_update_server
+
+- name: 'l4d2 | set server config'
+  ansible.builtin.template:
+    src:   'server.cfg.j2'
+    dest:  '{{ _steam_l4d2_dir }}/cfg/server.cfg'
+    owner: '{{ steam_user }}'
+    group: '{{ steam_group }}'
+    mode:  0600
+  vars:
+    server: '{{ steam_l4d2_server }}'
+  notify: 'restart l4d2.service'
+
+- name: 'l4d2 | create service'
+  ansible.builtin.template:
+    src:   'systemd.service.j2'
+    dest:  '/etc/systemd/system/l4d2.service'
+    owner: 'root'
+    group: 'root'
+    mode:  0755
+  vars:
+    systemd: '{{ _steam_l4d2_systemd }}'
+  notify: 'restart l4d2.service'
+
+- name: 'l4d2 | set motd'
+  ansible.builtin.copy:
+    dest:    '{{ _steam_l4d2_dir }}/motd.txt'
+    owner:   '{{ steam_user }}'
+    group:   '{{ steam_group }}'
+    mode:    0600
+    content: '{{ steam_l4d2_motd }}'
+  notify: 'restart l4d2.service'
+
+- name: 'l4d2 | set host'
+  ansible.builtin.copy:
+    dest:    '{{ _steam_l4d2_dir }}/host.txt'
+    owner:   '{{ steam_user }}'
+    group:   '{{ steam_group }}'
+    mode:    0600
+    content: '{{ steam_l4d2_host }}'
+  notify: 'restart l4d2.service'

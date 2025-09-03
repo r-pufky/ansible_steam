@@ -1,0 +1,59 @@
+[Unit]
+Description={{ systemd.description }}
+After={{ systemd.after }}
+{% if systemd.wants is defined %}
+Wants={{ systemd.wants }}
+{% endif %}
+
+[Service]
+User={{ systemd.user }}
+Group={{ systemd.group }}
+WorkingDirectory={{ systemd.working_directory }}
+
+{% if systemd.environment is defined %}
+{% for env in systemd.environment %}
+Environment="{{ env }}"
+{% endfor %}
+{% endif %}
+
+{% if systemd.exec_pre_start is defined %}
+ExecStartPre={{ systemd.exec_pre_start }}
+{% endif %}
+{% if systemd.exec_start is defined %}
+ExecStart={{ systemd.exec_start }}
+{% endif %}
+{% if systemd.exec_reload is defined %}
+ExecReload={{ systemd.exec_reload }}
+{% endif %}
+{% if systemd.exec_stop is defined %}
+ExecStop={{ systemd.exec_stop }}
+{% endif %}
+
+{% if systemd.timeout_start_sec is defined %}
+TimeoutStartSec=infinity
+{% endif %}
+
+{% if systemd.pid_file is defined %}
+PIDFile={{ systemd.pid_file }}
+{% endif %}
+{% if systemd.timeout_stop_sec is defined %}
+TimeoutStopSec={{ systemd.timeout_stop_sec }}
+{% endif %}
+
+Restart={{ systemd.restart }}
+
+{% if systemd.limit_no_file is defined %}
+LimitNOFILE={{ systemd.limit_no_file }}
+{% endif %}
+
+{% if systemd.standard_output is defined and systemd.standard_output|length > 0 %}
+StandardOutput={{ systemd.standard_output }}
+{% endif %}
+{% if systemd.standard_error is defined and systemd.standard_error|length > 0 %}
+StandardError={{ systemd.standard_error }}
+{% endif %}
+
+{% if systemd.wanted_by is defined %}
+[Install]
+WantedBy={{ systemd.wanted_by }}
+{% endif %}

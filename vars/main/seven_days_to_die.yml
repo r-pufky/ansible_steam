@@ -1,0 +1,10 @@
+---
+###############################################################################
+# 7 Days to Die Defaults
+###############################################################################
+
+# Steam application ID.
+steam_default_7days_app_id: 294420
+
+# @sSteamCmdForcePlatformType (linux, windows)
+steam_default_7days_platform: 'linux'

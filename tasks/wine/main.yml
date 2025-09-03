@@ -1,0 +1,9 @@
+---
+###############################################################################
+# Wine Tasks
+###############################################################################
+
+- ansible.builtin.include_tasks: wine.yml
+  when: _steam_wine_enable
+- ansible.builtin.include_tasks: winetricks.yml
+  when: _steam_wine_enable
