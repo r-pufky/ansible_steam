@@ -22,7 +22,7 @@ ignore it.
 No permissions to write updates to the data mount.
 
 .. code-block:: bash
-  :caption: Explicitly set permissions for Conan Exiles files.
+  :caption: Explicitly set permissions for Server files.
 
   chown -R conan:conan /data/server/ConanSandbox
 
