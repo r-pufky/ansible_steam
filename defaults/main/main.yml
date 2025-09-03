@@ -1,30 +1,116 @@
 ---
 ###############################################################################
-# Steam Role Configuration (~2GB)
+# Steam Role Options.
 ###############################################################################
-# Install steamcmd with additional dependencies for running windows servers.
-# Preconfigure server settings may be deployed by enabling specific games or
-# manually installed after the role is applied.
+# Install steamcmd with optional base dependencies for running windows servers.
+# Pre-configured servers will install all files and services required to run a
+# game. Servers require additional space listed in each game.
 #
-# Preconfigured servers will install all files and services required to run a
-# game.
+# Install size: ~162MB
+#     Steamcmd: ~4.3MB (base).
+#   Winetricks: ~3.6MB (base).
+#     Packages: ~55MB.
 
-# User that steam will run under. Assumes externally managed.
-steam_user:  'steam'
-steam_group: 'steam'
+# Automatically add Debian APT sources if required?
+#
+# Additional APT components (contrib, non-free, non-free-firmware) and winehq
+# are required for Steam installation.
+#
+# Alternatively these sources must be manually added outside of this role.
+#
+# Default: True.
+steam_srv_auto_add_apt_sources_enable: true
 
-# Create 'steam' user if not detected? See: vars/main.yml.
-steam_create_user: false
+###############################################################################
+# WINE Options
+###############################################################################
 
-# Install wine if enabled. May be automatically enabled if a preconfigured
-# game is enabled. Default: true.
-steam_wine_enable: false
+# Install wine? Default: False.
+steam_srv_wine_enable: false
 
-# Wine release to install (stable, devel, staging). Default: 'stable'.
-steam_wine_release: 'stable'
+# Wine release.
+#
+# Values:
+#    stable: Stable WINE interface - for most games (default).
+#   staging: Staging - typically contains patches for recent releases.
+#     devel: Development head - bleeding edge. Not recommended.
+#
+# Default: 'stable'.
+steam_srv_wine_release: 'stable'
 
-# Enable CAP_NET_RAW to allow applications that need to send and receive raw IP
-# packets to do so. This is disabled by default because it carries a potential
-# security risk, and the vast majority of applications do not need that
-# capability; though some wine applications/games my need it. Default: false.
-steam_wine_raw_network_enable: false
+# Winetricks release.
+#
+# Requires steam_srv_wine_release set.
+#
+# Always read release notes before updating versions. Role is only developed
+# for LTS releases.
+#
+# Versions (Date):
+#        DATE: Safe - Usually requires no role updates.
+#   RECOMMEND: Only increment DATE. Never use 'latest'.
+#
+# Values:
+#   {VERSION}: Tagged release to use ('20250102').
+#      latest: Use latest stable release.
+#
+# Default: '20250102'.
+#
+# Reference:
+# * https://github.com/Winetricks/winetricks/releases
+steam_srv_winetricks_release: '20250102'
+
+# Enable wine raw network access?
+#
+# Allows applications that need to send and receive raw IP packets to do so in
+# wine. Disabled by default because it carries a potential security risk. Only
+# enable if wine application requires it.
+#
+# Default: False.
+steam_srv_wine_raw_network_enable: false
+
+###############################################################################
+# Steam User
+###############################################################################
+
+# User that steamcmd will run under.
+#
+# Enable steam_srv_create_user if this account is not externally managed.
+# Steamcmd will be installed under ~/.steam.
+#
+# Default: 'steam'.
+steam_srv_user: 'steam'
+
+# Group that steamcmd will run under.
+#
+# Enable steam_srv_create_user if this group is not externally managed.
+#
+# Default: 'steam'.
+steam_srv_group: 'steam'
+
+# Create steam_srv_user, steam_srv_group if not detected?
+#
+# Applied via r_pufky.deb.users, see vars/main.yml for default user attributes.
+#
+# Default: True.
+steam_srv_create_user: true
+
+# Root backup location.
+#
+# Backups will be placed in sub-directories in this location, e.g.
+# /srv/backup/conan_exiles.
+#
+# Default: '/srv/backup'.
+steam_srv_backup_root: '/srv/backup'
+
+# Enable user management of media files?
+#
+# Use steam_srv_user to execute media management commands. Role applies media
+# permissions using 'root' by default. For mounted data locations (NFS with
+# squashed mounts, mapped container mounts, etc) the local root user will not
+# have sufficient privileges to modify these files.
+#
+# Applies to:
+# * steam_srv_backup_root
+#
+# Default: False.
+steam_srv_user_data_manage_enable: false

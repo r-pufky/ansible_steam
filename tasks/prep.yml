@@ -1,0 +1,60 @@
+---
+###############################################################################
+# Steam Prep
+###############################################################################
+# Prepare system for install by creating user/group for service, and
+# enumerating existing SSH keys if used. Stop services if they exist.
+
+- name: 'Prep | manage users'
+  when: _steam_srv_create_user.raw
+  ansible.builtin.include_role:
+    name: 'r_pufky.deb.users'
+    tasks_from: 'role_account_add.yml'
+  vars:
+    users_role_user: '{{ steam_role_user }}'
+    users_role_group: '{{ steam_role_group }}'
+
+- name: 'Prep | enumerate system user {{ _steam_srv_user.raw }}'
+  ansible.builtin.user:
+    name: '{{ _steam_srv_user.raw }}'
+  check_mode: true
+  changed_when: false
+  register: _steam_srv_user_query
+
+- name: 'Prep | parse system user UID/GID'
+  ansible.builtin.set_fact:
+    _steam_srv_user: '{{
+        _steam_srv_user |
+        combine({"role_uid": _steam_srv_user_query.uid,
+                 "role_home": _steam_srv_user_query.home})
+      }}'
+    _steam_srv_group: '{{
+        _steam_srv_group |
+        combine({"role_gid": _steam_srv_user_query.group})
+      }}'
+
+- name: 'Prep | set debconf steam licensed viewed'
+  ansible.builtin.debconf:
+    name: 'steam'
+    question: 'steam/license'
+    value: "note ''"
+    vtype: 'string'
+
+- name: 'Prep | set debconf steam license accepted'
+  ansible.builtin.debconf:
+    name: 'steam'
+    question: 'steam/question'
+    value: 'I AGREE'
+    vtype: 'select'
+
+- name: 'Prep | set wine CAP_NET_RAW'
+  when: _steam_srv_wine_raw_network_enable.raw
+  ansible.builtin.debconf:
+    name: 'wine-{{ _steam_srv_wine_release.raw }}{{ item }}'
+    question: '{{ _steam_srv_wine_raw_network_enable.role_question }}'
+    value: '{{ _steam_srv_wine_raw_network_enable.role_value }}'
+    vtype: 'boolean'
+  loop:
+    - ''
+    - '-amd64'
+    - '-i386'

@@ -1,0 +1,35 @@
+---
+- name: 'Verify'
+  hosts: 'all'
+  gather_facts: false
+  tasks:
+    - name: 'Verify | /srv/backup'
+      ansible.builtin.include_role:
+        name: 'r_pufky.lib.tests'
+        tasks_from: 'file.yml'
+      vars:
+        test_name: 'Verify | /srv/backup'
+        test_file: '/srv/backup'
+        test_owner: 'steam'
+        test_group: 'steam'
+        test_mode: '0755'
+        test_state: 'directory'
+        test_diff: true
+
+    - name: 'Verify | /opt/deluge/config'
+      ansible.builtin.include_role:
+        name: 'r_pufky.lib.tests'
+        tasks_from: 'copy.yml'
+      vars:
+        test_name: 'Verify | {{ item }}'
+        test_src: 'files/{{ item }}'
+        test_file: '/opt/deluge/config/{{ item }}'
+        test_owner: 'media'
+        test_group: 'media'
+        test_mode: '0600'
+        test_diff: true
+      loop:
+        - 'autoadd.conf'
+        - 'blocklist.conf'
+        - 'blocklist.download'
+        - 'extractor.conf'

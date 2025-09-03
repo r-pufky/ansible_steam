@@ -8,69 +8,115 @@
 # auto reboot every 10 seconds.
 #
 # Reference:
-# *  https://forums.alliedmods.net/showthread.php?t=300118
-#
-# 'SDL manager'
-#
-# Reference:
+# * https://forums.alliedmods.net/showthread.php?t=300118
 # * https://github.com/ValveSoftware/steam-for-linux/issues/7036
 
-# x86_64 packages for steam.
-steam_default_core_packages:
-  - 'lib32gcc-s1'
-  - 'libsdl2-2.0-0' # SDL support
-  - 'steamcmd'
-  - 'gdb'           # -debug support
-  - 'libc6'         # -debug support
-
-# x86 (i386) packages for steam.
-steam_default_i386_packages:
-  - 'libsdl2-2.0-0:i386' # SDL support
-  - 'libc6:i386'         # -debug support
+steam_role_validate_date: '2025-08-24'
+steam_role_validate_release: 'trixie'
+steam_role_validate_version: '0~20180105-5'
+steam_role_wine_release: 'stable'
+steam_role_winetricks_release: '20250102'
 
 ###############################################################################
-# Default Wine Package Dependencies
+# APT Packages
 ###############################################################################
-# Default required packages for Wine install.
 
-# Repository to use for wine install
-steam_default_wine_repo: 'deb https://dl.winehq.org/wine-builds/debian/ {{ ansible_distribution_release }} main'
-
-# x86_64 packages for wine.
-wine_default_core_packages:
+steam_role_packages:
   - 'gnupg2'
-  - 'xvfb'
-  - 'winbind'
-  - 'libasound2-plugins'
+  - 'tar'
+  - 'xz-utils'
+  - 'lib32gcc-s1'
+  - 'libsdl2-2.0-0'  # SDL support.
+  - 'libsdl2-2.0-0:i386'  # SDL support i386.
+  - 'steamcmd'
+  - 'gdb'  # -debug support.
+  - 'libc6'  # -debug support.
+  - 'libc6:i386'  # -debug support i386.
 
-# x86 (i386) packages for wine.
-wine_default_i386_packages:
-  - 'libasound2-plugins:i386'
+steam_role_wine_packages:
+  - 'xvfb'  # Lightweight window manager.
+  - 'winbind'  # Windows user/group resolution.
+  - 'libasound2-plugins'  # asound.
+  - 'libasound2-plugins:i386'  # asound i386.
+
+# Debian APT sources to use if package install fails.
+steam_role_apt_sources:
+  - name: 'debian'
+    types:
+      - 'deb'
+      - 'deb-src'
+    uris: 'http://deb.debian.org/debian'
+    suites:
+      - 'trixie'
+      - 'trixie-updates'
+      - 'trixie-backports'
+    components:
+      - 'main'
+      - 'contrib'
+      - 'non-free'
+      - 'non-free-firmware'
+    signed_by: '/usr/share/keyrings/debian-archive-keyring.gpg'
+  - name: 'debian-security'
+    types:
+      - 'deb'
+      - 'deb-src'
+    uris: 'http://deb.debian.org/debian-security'
+    suites:
+      - 'trixie-security'
+    components:
+      - 'main'
+      - 'contrib'
+      - 'non-free'
+      - 'non-free-firmware'
+    signed_by: '/usr/share/keyrings/debian-archive-keyring.gpg'
+  - name: 'winehq'
+    types:
+      - 'deb'
+    uris: 'https://dl.winehq.org/wine-builds/debian'
+    suites:
+      - 'trixie'
+    components:
+      - 'main'
+    architectures:
+      - 'amd64'
+      - 'i386'
+    signed_by: 'https://dl.winehq.org/wine-builds/winehq.key'
 
 ###############################################################################
-# Default Steam User Group
+# Winetricks GitHub Options
 ###############################################################################
-# Default group settings if an Steam user is force created.
-
-steam_default_group:
-  name: 'steam'
-  gid:  51000
-
-###############################################################################
-# Default Steam User Account
-###############################################################################
-# Default user settings if an Steam user is force created.
+# Winetricks releases source downloads.
 #
-# Logins are disabled.
+# wget https://dl.winehq.org/wine-builds/winehq.key
+# gpg --show-keys winehq.key
+#
+# Reference:
+# * https://dl.winehq.org/wine-builds
+# * https://github.com/Winetricks/winetricks/releases
 
-steam_default_user:
-    name:            'steam'
-    group:           'steam'
-    uid:             51000
-    shell:           '/bin/bash'
-    home:            '/home/steam'
-    create_home:     true
-    password:        '!'
-    password_lock:   true
-    update_password: 'always'
-    expires:         -1
+steam_role_repo_release_owner: 'Winetricks'
+steam_role_repo_release_repo: 'winetricks'
+steam_role_repo_extract_dir: '/opt/winetricks'
+steam_role_repo_extract_symlink: '/opt/winetricks/winetricks'
+steam_role_repo_release_asset: '{VERSION}.tar.gz'
+steam_role_repo_release_gpg_key_id: 'D43F640145369C51D786DDEA76F1A20FF987672F'
+
+###############################################################################
+# Default Steam User/Group
+###############################################################################
+
+steam_role_group:
+  name: 'steam'
+  gid: 51000
+
+steam_role_user:
+  name: 'steam'
+  group: 'steam'
+  uid: 51000
+  shell: '/bin/bash'
+  home: '/home/steam'
+  create_home: true
+  password: '*'
+  password_lock: true
+  update_password: 'always'
+  expires: -1

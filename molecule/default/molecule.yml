@@ -1,0 +1,66 @@
+---
+###############################################################################
+# Default
+###############################################################################
+# Default values results in usable steamcmd.
+#
+# Steamcmd is installed and usable by steam user with no errors.
+#
+# Tests:
+# * deluged.service active and running.
+# * deluge-web.service active and running.
+# * /opt/deluge created with correct permissions.
+# * Default plugins configurations are rendered correctly.
+# * Server backup root directory is created successfully.
+
+dependency:
+  name: 'galaxy'
+driver:
+  name: 'podman'
+provisioner:
+  name: 'ansible'
+  config_options:
+    defaults:
+      interpreter_python: 'auto_silent'
+      callback_whitelist: 'profile_tasks, timer, yaml'
+    ssh_connection:
+      pipelining: false
+  inventory:
+    host_vars:
+      deluge-debian-13-user_data:
+        deluge_srv_user_data_manage_enable: true
+platforms:
+  - name: 'steam-debian-13-default'
+    image: 'ghcr.io/hifis-net/debian-systemd:13'
+    systemd: 'always'
+    volumes:
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+    command: '/lib/systemd/systemd'
+    pre_build_image: true
+  - name: 'steam-debian-13-user_data'
+    image: 'ghcr.io/hifis-net/debian-systemd:13'
+    systemd: 'always'
+    volumes:
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+    command: '/lib/systemd/systemd'
+    pre_build_image: true
+verifier:
+  name: 'ansible'
+lint: |
+  set -e
+  yamllint .
+  ansible-lint .
+scenario:
+  test_sequence:
+    # - 'dependency'
+    # - 'cleanup'
+    - 'destroy'
+    - 'syntax'
+    - 'create'
+    - 'prepare'
+    - 'converge'
+    # - 'idempotence'  # services always restarted.
+    # - 'side_effect'
+    - 'verify'
+    # - 'cleanup'
+    - 'destroy'

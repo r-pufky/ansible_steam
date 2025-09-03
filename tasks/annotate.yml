@@ -1,0 +1,150 @@
+---
+###############################################################################
+# Annotate User Configuration
+###############################################################################
+# Sanitize (standardize with default values if not set) Steam configuration.
+#
+# Decision: Only sanitize steam service - Specific game configurations must be
+#     sanitized for each game.
+#
+# A necessary evil given the limitations of argument_spec:
+# * Strong validation and sanitization of user input.
+# * Annotated variable providing context and rendering hints.
+# * Logic updates centrally located in tasks.
+# * Simplified role updates for variable changes.
+# * All data touched by user is in a standard, expected format.
+#
+# Annotated Defaults (2.0):
+# _{VAR}: dict - Annotated and sanitized default variable.
+#   section: str - Section name.
+#   key: str - Config file key.
+#   raw: any - Raw value from user, defaults, or role defaults.
+#   data: any - Processed raw value for use in rendering. Optional.
+#   default: any - Role default (testing for changed defaults).
+#   hint: str - Value rendering type hint (docstring types).
+#   role_*: any - Role specific usage. Optional.
+#   added: str - Release version variable added.
+#       Special Case:
+#         0.0.0: Unknown or since role inception.
+#   sensitive: bool - True for PII/SPII data that should not be logged.
+#   deprecated: bool - True if no longer used in current role release.
+#   order: int - Order item should appear in templated files.
+
+- name: 'Annotate | sanitize & annotate general config'
+  ansible.builtin.set_fact:
+    _steam_srv_auto_add_apt_sources_enable: {
+      section: '',
+      key: '',
+      raw: '{{ steam_srv_auto_add_apt_sources_enable }}',
+      default: true,
+      hint: 'bool',
+      added: '0.0.0',
+      sensitive: false,
+      deprecated: false,
+      order: 1,
+    }
+    _steam_srv_wine_enable: {
+      section: '',
+      key: '',
+      raw: '{{ steam_srv_wine_enable }}',
+      default: false,
+      hint: 'bool',
+      added: '0.0.0',
+      sensitive: false,
+      deprecated: false,
+      order: 2,
+    }
+    _steam_srv_wine_release: {
+      section: '',
+      key: '',
+      raw: '{{ steam_srv_wine_release }}',
+      default: '{{ steam_role_wine_release }}',
+      hint: 'str',
+      added: '0.0.0',
+      sensitive: false,
+      deprecated: false,
+      order: 3,
+    }
+    _steam_srv_winetricks_release: {
+      section: '',
+      key: '',
+      raw: '{{ steam_srv_winetricks_release }}',
+      default: '{{ steam_role_winetricks_release }}',
+      hint: 'str',
+      added: '0.0.0',
+      sensitive: false,
+      deprecated: false,
+      order: 4,
+    }
+    _steam_srv_wine_raw_network_enable: {
+      section: '',
+      key: '',
+      raw: '{{ steam_srv_wine_raw_network_enable }}',
+      default: false,
+      role_question: 'wine/setcaps',
+      role_value: '{{ steam_srv_wine_enable | lower }}',
+      hint: 'bool',
+      added: '0.0.0',
+      sensitive: false,
+      deprecated: false,
+      order: 5,
+    }
+    _steam_srv_user: {
+      section: '',
+      key: '',
+      raw: '{{ steam_srv_user }}',
+      default: 'steam',
+      role_uid: '',  # (str) UID.
+      role_home: '',  # (str) Resolved absolute user home path.
+      hint: 'str',
+      added: '0.0.0',
+      sensitive: false,
+      deprecated: false,
+      order: 6,
+    }
+    _steam_srv_group: {
+      section: '',
+      key: '',
+      raw: '{{ steam_srv_group }}',
+      role_gid: '',  # (str) GID.
+      default: 'steam',
+      hint: 'str',
+      added: '0.0.0',
+      sensitive: false,
+      deprecated: false,
+      order: 7,
+    }
+    _steam_srv_create_user: {
+      section: '',
+      key: '',
+      raw: '{{ steam_srv_create_user }}',
+      default: true,
+      hint: 'bool',
+      added: '0.0.0',
+      sensitive: false,
+      deprecated: false,
+      order: 8,
+    }
+    _steam_srv_backup_root: {
+      section: '',
+      key: '',
+      raw: '{{ steam_srv_backup_root }}',
+      data: "{{ steam_srv_backup_root | regex_replace('\\/$', '') ~ '/' }}",
+      default: '/srv/backup',
+      hint: 'str',
+      added: '0.0.0',
+      sensitive: false,
+      deprecated: false,
+      order: 9,
+    }
+    _steam_srv_user_data_manage_enable: {
+      section: '',
+      key: '',
+      raw: '{{ steam_srv_user_data_manage_enable }}',
+      default: false,
+      hint: 'bool',
+      added: '0.0.0',
+      sensitive: false,
+      deprecated: false,
+      order: 10,
+    }

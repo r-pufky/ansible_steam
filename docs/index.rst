@@ -8,11 +8,6 @@ Steam dedicated servers with steamcmd and wine.
   :hidden:
   :maxdepth: -1
 
-  conan_exiles
-  left_4_dead
-  left_4_dead_2
-  satisfactory
-  seven_days_to_die
   troubleshooting
 
 .. role:: steam
