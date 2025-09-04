@@ -1,0 +1,25 @@
+---
+- name: 'Prepare'
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: 'Prepare | create cache'
+      ansible.builtin.include_role:
+        name: 'r_pufky.lib.tests'
+        tasks_from: 'create_cache.yml'
+      vars:
+        test_name: 'Prepare cache'
+
+    - name: 'Prepare | check winetricks 20250102'
+      ansible.builtin.include_role:
+        name: 'r_pufky.lib.tests'
+        tasks_from: 'cache_url.yml'
+      vars:
+        test_name: 'Prepare | cache winetricks 20250102'
+        test_dest: '20250102.tar.gz'
+        test_url: '{{
+            "https://github.com/Winetricks/winetricks/archive/refs/tags/" ~
+            "20250102.tar.gz"
+          }}'
+        test_mode: '0640'

@@ -1,15 +1,14 @@
 ---
 ###############################################################################
-# Default
+# Wine
 ###############################################################################
-# Default values results in usable steamcmd.
-#
-# Steamcmd is installed and usable by steam user with no errors.
+# Wine is installed and usable by steam user with no errors.
 #
 # Tests:
 # * /srv/backup created with correct permissions.
 # * steam_srv_user_data_manage_enable directories created.
 # * steamcmd works correctly.
+# * Wine packages installed correctly.
 
 dependency:
   name: 'galaxy'
@@ -25,17 +24,11 @@ provisioner:
       pipelining: false
   inventory:
     host_vars:
-      steam-debian-13-user_data:
-        steam_srv_user_data_manage_enable: true
+      steam-debian-13-wine:
+        steam_srv_wine_enable: true
+        steam_srv_wine_raw_network_enable: true
 platforms:
-  - name: 'steam-debian-13-default'
-    image: 'ghcr.io/hifis-net/debian-systemd:13'
-    systemd: 'always'
-    volumes:
-      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
-    command: '/lib/systemd/systemd'
-    pre_build_image: true
-  - name: 'steam-debian-13-user_data'
+  - name: 'steam-debian-13-wine'
     image: 'ghcr.io/hifis-net/debian-systemd:13'
     systemd: 'always'
     volumes:

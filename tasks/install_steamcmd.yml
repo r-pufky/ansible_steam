@@ -1,0 +1,59 @@
+---
+###############################################################################
+# Install Steamcmd
+###############################################################################
+# Install steamcmd base.
+#
+# Reference:
+# * https://developer.valvesoftware.com/wiki/SteamCMD#Linux
+
+- name: 'Install | create backup directory'
+  ansible.builtin.file:
+    path: '{{ _steam_srv_backup_root.raw }}'
+    owner: '{{ _steam_srv_user.role_uid }}'
+    group: '{{ _steam_srv_group.role_gid }}'
+    mode: '0755'
+    state: 'directory'
+  changed_when: false  # https://github.com/ansible/ansible/issues/32636
+  become: true
+  become_user: '{{
+      _steam_srv_user.raw
+      if _steam_srv_user_data_manage_enable.raw else
+      "root"
+    }}'
+
+- name: 'Install | enable i386 architecture support'
+  ansible.builtin.command: 'dpkg --add-architecture i386'
+  args:
+    creates: '/var/lib/dpkg/arch'
+
+- name: 'Install | packages'
+  ansible.builtin.include_role:
+    name: 'r_pufky.deb.apt'
+  vars:
+    apt_packages:
+      - '{{ steam_role_packages }}'
+    apt_sources: '{{
+        steam_role_apt_sources
+        if steam_srv_auto_add_apt_sources_enable else
+        []
+      }}'
+    apt_package_update_cache: true
+
+- name: 'Install | updating steamcmd 🗘'
+  ansible.builtin.debug:
+    msg: |
+      ╭───────────────────────────────────────────────────────────────────╮
+      │                                                                   │
+      │     steamcmd is being updated. This will take a few minutes.      │
+      │                                                                   │
+      ╰───────────────────────────────────────────────────────────────────╯
+
+- name: 'Install | update steamcmd'
+  ansible.builtin.shell: '/usr/games/steamcmd +quit'
+  args:
+    executable: '/bin/bash'
+    chdir: '{{ _steam_srv_user.role_home }}'
+  changed_when: false
+  become: true
+  become_user: '{{ _steam_srv_user.raw }}'

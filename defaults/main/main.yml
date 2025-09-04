@@ -13,8 +13,10 @@
 
 # Automatically add Debian APT sources if required?
 #
-# Additional APT components (contrib, non-free, non-free-firmware) and winehq
-# are required for Steam installation.
+# Additional APT components (contrib, non-free, non-free-firmware) are required
+# for Steam installation.
+#
+# winehq sources are install if steam_srv_wine_enable=true.
 #
 # Alternatively these sources must be manually added outside of this role.
 #
@@ -31,9 +33,11 @@ steam_srv_wine_enable: false
 # Wine release.
 #
 # Values:
-#    stable: Stable WINE interface - for most games (default).
-#   staging: Staging - typically contains patches for recent releases.
-#     devel: Development head - bleeding edge. Not recommended.
+#    stable: Annual release - for most games (default).
+#   staging: Pre-annual release with experimental patches - typically contains
+#            patches for recent releases. Use only if 'stable' does not work.
+#     devel: Bi-weekly release of development head - bleeding edge. Not
+#            recommended.
 #
 # Default: 'stable'.
 steam_srv_wine_release: 'stable'

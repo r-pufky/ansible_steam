@@ -47,7 +47,7 @@
     value: 'I AGREE'
     vtype: 'select'
 
-- name: 'Prep | set wine CAP_NET_RAW'
+- name: 'Prep | set debconf wine CAP_NET_RAW'
   when: _steam_srv_wine_raw_network_enable.raw
   ansible.builtin.debconf:
     name: 'wine-{{ _steam_srv_wine_release.raw }}{{ item }}'

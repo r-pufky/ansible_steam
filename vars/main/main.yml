@@ -25,21 +25,14 @@ steam_role_packages:
   - 'gnupg2'
   - 'tar'
   - 'xz-utils'
-  - 'lib32gcc-s1'
-  - 'libsdl2-2.0-0'  # SDL support.
-  - 'libsdl2-2.0-0:i386'  # SDL support i386.
+  # - 'lib32gcc-s1'
+  # - 'libsdl2-2.0-0'  # SDL support.
+  # - 'libsdl2-2.0-0:i386'  # SDL support i386.
   - 'steamcmd'
-  - 'gdb'  # -debug support.
-  - 'libc6'  # -debug support.
-  - 'libc6:i386'  # -debug support i386.
+  # - 'gdb'  # -debug support.
+  # - 'libc6'  # -debug support.
+  # - 'libc6:i386'  # -debug support i386.
 
-steam_role_wine_packages:
-  - 'xvfb'  # Lightweight window manager.
-  - 'winbind'  # Windows user/group resolution.
-  - 'libasound2-plugins'  # asound.
-  - 'libasound2-plugins:i386'  # asound i386.
-
-# Debian APT sources to use if package install fails.
 steam_role_apt_sources:
   - name: 'debian'
     types:
@@ -69,6 +62,18 @@ steam_role_apt_sources:
       - 'non-free'
       - 'non-free-firmware'
     signed_by: '/usr/share/keyrings/debian-archive-keyring.gpg'
+
+###############################################################################
+# Wine Options
+###############################################################################
+
+steam_role_wine_packages:
+  - 'xvfb'  # Lightweight window manager.
+  - 'winbind'  # Windows user/group resolution.
+  - 'libasound2-plugins'  # asound.
+  - 'libasound2-plugins:i386'  # asound i386.
+
+steam_role_wine_sources:
   - name: 'winehq'
     types:
       - 'deb'
