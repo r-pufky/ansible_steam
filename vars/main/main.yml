@@ -125,3 +125,12 @@ steam_role_user:
   password_lock: true
   update_password: 'always'
   expires: -1
+
+###############################################################################
+# Mod Options
+###############################################################################
+
+steam_role_sourcemod_dest: '/opt/sourcemod'
+steam_role_sourcemod_url: 'https://sm.alliedmods.net/smdrop/'
+steam_role_metamod_dest: '/opt/metamod'
+steam_role_metamod_url: 'https://mms.alliedmods.net/mmsdrop/'

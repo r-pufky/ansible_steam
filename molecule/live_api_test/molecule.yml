@@ -1,15 +1,18 @@
 ---
 ###############################################################################
-# Default
+# Live API Test
 ###############################################################################
-# Default values results in usable steamcmd.
+# Integration test against a live steamsitory for mod downloads. This confirms
+# mod download logic is processed correctly and should only be run as one-off
+# test before releasing.
 #
-# Steamcmd is installed and usable by steam user with no errors.
+# Enable live API commands.
+#
+#   molecule test -s steam -- -v -e 'steam_live_api_enable=true'
 #
 # Tests:
-# * /srv/backup created with correct permissions.
-# * steam_srv_user_data_manage_enable directories created.
-# * steamcmd works correctly.
+# * Metamod is downloaded correctly.
+# * Sourcemod is downloaded correctly.
 
 dependency:
   name: 'galaxy'
@@ -24,18 +27,15 @@ provisioner:
     ssh_connection:
       pipelining: false
   inventory:
-    host_vars:
-      steam-debian-13-user_data:
-        steam_srv_user_data_manage_enable: true
+    group_vars:
+      all:
+        steam_live_api_enable: false
+        steam_srv_metamod_branch: '1.12'
+        steam_srv_metamod_build: '1219'
+        steam_srv_sourcemod_branch: '1.12'
+        steam_srv_sourcemod_build: '7210'
 platforms:
-  - name: 'steam-debian-13-default'
-    image: 'ghcr.io/hifis-net/debian-systemd:13'
-    systemd: 'always'
-    volumes:
-      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
-    command: '/lib/systemd/systemd'
-    pre_build_image: true
-  - name: 'steam-debian-13-user_data'
+  - name: 'steam-12-live_api_test'
     image: 'ghcr.io/hifis-net/debian-systemd:13'
     systemd: 'always'
     volumes:
@@ -55,9 +55,9 @@ scenario:
     - 'destroy'
     - 'syntax'
     - 'create'
-    - 'prepare'
+    # - 'prepare'
     - 'converge'
-    # - 'idempotence'  # services always restarted.
+    # - 'idempotence'  # Files created, extracted, created, deleted.
     # - 'side_effect'
     - 'verify'
     # - 'cleanup'

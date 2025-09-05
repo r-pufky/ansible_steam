@@ -6,6 +6,28 @@
 - name: 'Install steamcmd'
   ansible.builtin.include_tasks: 'install_steamcmd.yml'
 
+- name: 'Install metamod'
+  when: _steam_srv_metamod_enable.raw
+  ansible.builtin.include_tasks: 'download.yml'
+  vars:
+    root: '{{ steam_role_metamod_dest }}'
+    file: '{{ _steam_srv_metamod_enable.role_file }}'
+    url: '{{
+        _steam_srv_metamod_enable.role_url ~
+        _steam_srv_metamod_enable.role_file
+      }}'
+
+- name: 'Install sourcemod'
+  when: _steam_srv_sourcemod_enable.raw
+  ansible.builtin.include_tasks: 'download.yml'
+  vars:
+    root: '{{ steam_role_sourcemod_dest }}'
+    file: '{{ _steam_srv_sourcemod_enable.role_file }}'
+    url: '{{
+        _steam_srv_sourcemod_enable.role_url ~
+        _steam_srv_sourcemod_enable.role_file
+      }}'
+
 - name: 'Install wine'
   when: _steam_srv_wine_enable.raw
   ansible.builtin.include_tasks: 'install_wine.yml'

@@ -1,0 +1,30 @@
+---
+- name: 'Converge'
+  hosts: 'all'
+  gather_facts: false
+  tasks:
+    - name: 'Converge | API TESTING NOT ENABLED ⚠'
+      when: not steam_live_api_enable | default(false)
+      ansible.builtin.debug:
+        msg: |
+          ╭───────────────────────────────────────────────────────────────────╮
+          │                                                                   │
+          │      TEST WILL NOT EXECUTE UNLESS IT IS EXPLICITLY ENABLED.       │
+          │                                                                   │
+          ├───────────────────────────────────────────────────────────────────╯
+          │ Enable live API commands:
+          │
+          │   * steam_live_api_enable=true
+          │
+          │ Example:
+          │
+          │   molecule test -s live_api_test -- -v -e \
+          │     'steam_live_api_enable=true'
+
+    - name: 'Converge | apply r_pufky.deb.repo (github)'
+      when: steam_live_api_enable | default(false)
+      ansible.builtin.include_role:
+        name: 'r_pufky.game.steam'
+      vars:
+        steam_srv_metamod_enable: true
+        steam_srv_sourcemod_enable: true

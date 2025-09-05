@@ -1,0 +1,46 @@
+---
+- name: 'Verify'
+  hosts: 'all'
+  gather_facts: false
+  tasks:
+    - name: 'Verify'
+      when: steam_live_api_enable | default(false)
+      block:
+        - name: 'Verify | generate filenames'
+          ansible.builtin.set_fact:
+            _test_metamod: '{{
+                "/opt/metamod/mmsource-" ~
+                steam_srv_metamod_branch ~ ".0-git" ~
+                steam_srv_metamod_build ~ "-linux.tar.gz"
+              }}'
+            _test_sourcemod: '{{
+                "/opt/sourcemod/sourcemod-" ~
+                steam_srv_sourcemod_branch ~ ".0-git" ~
+                steam_srv_sourcemod_build ~ "-linux.tar.gz"
+              }}'
+
+        - name: 'Verify | {{ _test_metamod }}'
+          ansible.builtin.include_role:
+            name: 'r_pufky.lib.tests'
+            tasks_from: 'file.yml'
+          vars:
+            test_name: 'Verify | {{ _test_metamod }}'
+            test_file: '{{ _test_metamod }}'
+            test_owner: 'steam'
+            test_group: 'steam'
+            test_mode: '0755'
+            test_state: 'file'
+            test_diff: true
+
+        - name: 'Verify | {{ _test_sourcemod }}'
+          ansible.builtin.include_role:
+            name: 'r_pufky.lib.tests'
+            tasks_from: 'file.yml'
+          vars:
+            test_name: 'Verify | {{ _test_sourcemod }}'
+            test_file: '{{ _test_sourcemod }}'
+            test_owner: 'steam'
+            test_group: 'steam'
+            test_mode: '0755'
+            test_state: 'file'
+            test_diff: true

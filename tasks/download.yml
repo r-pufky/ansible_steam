@@ -1,0 +1,57 @@
+---
+###############################################################################
+# Download mods
+###############################################################################
+# r_pufky.deb.repo cannot be used for sourcemod and metamod as file metadata is
+# not present in hosted repositories; effectively this is a bare get_url with
+# convenience wrappers.
+#
+# Always use r_pufky.deb.repo if able.
+#
+# File are only downloaded with steam_srv_user permissions. Game installers
+# must manage extraction and install per-game.
+#
+# Args:
+#   root: str - Destination root directory.
+#   file: str - Filename to download.
+#   url: str - URL to file.
+#
+# Reference:
+# * https://www.sourcemm.net/downloads.php?branch=stable
+
+- name: 'Download | check asset location'
+  ansible.builtin.stat:
+    path: '{{ root ~ "/" ~ file }}'
+  register: _steam_mod
+
+- name: 'Download | create {{ root }}'
+  when: not _steam_mod.stat.exists
+  ansible.builtin.file:
+    path: '{{ root }}'
+    owner: '{{ _steam_srv_user.role_uid }}'
+    group: '{{ _steam_srv_group.role_gid }}'
+    mode: '0755'
+    state: 'directory'
+
+- name: 'Download | download in progress 🗘'
+  when: not _steam_mod.stat.exists
+  ansible.builtin.debug:
+    msg: |
+      ╭───────────────────────────────────────────────────────────────────╮
+      │                                                                   │
+      │     Assets are being downloaded. This may take a few minutes.     │
+      │                                                                   │
+      ╰───────────────────────────────────────────────────────────────────╯
+
+- name: 'Download | {{ file }}'
+  when: not _steam_mod.stat.exists
+  ansible.builtin.get_url:
+    url: '{{ url }}'
+    dest: '{{ root ~ "/" ~ file }}'
+    owner: '{{ _steam_srv_user.role_uid }}'
+    group: '{{ _steam_srv_group.role_gid }}'
+    mode: '0755'
+  register: _steam_download
+  until: _steam_download is succeeded
+  retries: '{{ _steam_srv_download_retries.raw }}'
+  delay: 2

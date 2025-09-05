@@ -8,6 +8,8 @@
 #
 # Install size: ~162MB
 #     Steamcmd: ~4.3MB (base).
+#      Metamod: ~4.7MB.
+#    Sourcemod: ~71.4MB.
 #   Winetricks: ~3.6MB (base).
 #     Packages: ~55MB.
 
@@ -22,6 +24,13 @@
 #
 # Default: True.
 steam_srv_auto_add_apt_sources_enable: true
+
+# Number of times to retry failed downloads?
+#
+# Currently applies to metamod, sourcemod.
+#
+# Default: 3.
+steam_srv_download_retries: 3
 
 ###############################################################################
 # WINE Options
@@ -71,6 +80,74 @@ steam_srv_winetricks_release: '20250102'
 #
 # Default: False.
 steam_srv_wine_raw_network_enable: false
+
+###############################################################################
+# Metamod Options
+###############################################################################
+# Provides 'SourceHook' which enables plugins for source games to intercept
+# calls (enables mod support).
+#
+# Reference:
+# * https: //www.sourcemm.net
+
+# Enable Metamod installation?
+#
+# Metamod will be downloaded to /opt/metamod. Specific games must manually
+# install Metamod based on game requirements and locations.
+#
+# Default: False.
+steam_srv_metamod_enable: false
+
+# Metamod branch.
+#
+# Default: '1.12'.
+#
+# Reference:
+# * https: //www.sourcemm.net/downloads.php?branch=stable
+steam_srv_metamod_branch: '1.12'
+
+# Metamod build.
+#
+# Default: '7210'.
+#
+# Reference:
+# * https: //www.sourcemm.net/downloads.php?branch=stable
+steam_srv_metamod_build: '1219'
+
+###############################################################################
+# Sourcemod
+###############################################################################
+# SourceMod is server modification for any game that runs on the Half-Life 2
+# engine. It is a powerful, highly optimized platform for scripting plugins and
+# handling server administration. The default package comes with a base set of
+# plugins, but there are over 2,500 plugins in the community.
+#
+# Reference:
+# * https: //www.sourcemod.net
+
+# Enable Sourcemod installation?
+#
+# Sourcemod will be downloaded to /opt/sourcemod. Specific games must manually
+# install Sourcemod based on game requirements and locations.
+#
+# Default: False.
+steam_srv_sourcemod_enable: false
+
+# Sourcemod branch.
+#
+# Default: '1.12'.
+#
+# Reference:
+# * https: //www.sourcemod.net/downloads.php?branch=stable
+steam_srv_sourcemod_branch: '1.12'
+
+# Sourcemod build.
+#
+# Default: '7210'.
+#
+# Reference:
+# * https: //www.sourcemod.net/downloads.php?branch=stable
+steam_srv_sourcemod_build: '7210'
 
 ###############################################################################
 # Steam User
