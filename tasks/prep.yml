@@ -26,7 +26,8 @@
     _steam_srv_user: '{{
         _steam_srv_user |
         combine({"role_uid": _steam_srv_user_query.uid,
-                 "role_home": _steam_srv_user_query.home})
+                 "role_home": _steam_srv_user_query.home,
+                 "role_share": _steam_srv_user_query.home ~ "/.local/share"})
       }}'
     _steam_srv_group: '{{
         _steam_srv_group |

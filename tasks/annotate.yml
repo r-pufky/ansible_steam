@@ -96,6 +96,7 @@
       default: 'steam',
       role_uid: '',  # (str) UID.
       role_home: '',  # (str) Resolved absolute user home path.
+      role_share: '',  # (str) Steam share directory (saves, user profiles).
       hint: 'str',
       added: '0.0.0',
       sensitive: false,
@@ -124,27 +125,4 @@
       sensitive: false,
       deprecated: false,
       order: 8,
-    }
-    _steam_srv_backup_root: {
-      section: '',
-      key: '',
-      raw: '{{ steam_srv_backup_root }}',
-      data: "{{ steam_srv_backup_root | regex_replace('\\/$', '') ~ '/' }}",
-      default: '/srv/backup',
-      hint: 'str',
-      added: '0.0.0',
-      sensitive: false,
-      deprecated: false,
-      order: 9,
-    }
-    _steam_srv_user_data_manage_enable: {
-      section: '',
-      key: '',
-      raw: '{{ steam_srv_user_data_manage_enable }}',
-      default: false,
-      hint: 'bool',
-      added: '0.0.0',
-      sensitive: false,
-      deprecated: false,
-      order: 10,
     }

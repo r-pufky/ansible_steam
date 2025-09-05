@@ -30,6 +30,7 @@
       │                                                                   │
       ╰───────────────────────────────────────────────────────────────────╯
 
+# TODO: indentations on shell line cause steamcmd errror --see seven.
 - name: 'Steamcmd | update server {{ steam_app_id }}'
   ansible.builtin.shell: >-
     /usr/games/steamcmd

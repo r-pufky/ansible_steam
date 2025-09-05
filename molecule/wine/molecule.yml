@@ -5,8 +5,6 @@
 # Wine is installed and usable by steam user with no errors.
 #
 # Tests:
-# * /srv/backup created with correct permissions.
-# * steam_srv_user_data_manage_enable directories created.
 # * steamcmd works correctly.
 # * Wine packages installed correctly.
 

@@ -3,19 +3,6 @@
   hosts: 'all'
   gather_facts: false
   tasks:
-    - name: 'Verify | /srv/backup'
-      ansible.builtin.include_role:
-        name: 'r_pufky.lib.tests'
-        tasks_from: 'file.yml'
-      vars:
-        test_name: 'Verify | /srv/backup'
-        test_file: '/srv/backup'
-        test_owner: 'steam'
-        test_group: 'steam'
-        test_mode: '0755'
-        test_state: 'directory'
-        test_diff: true
-
     - name: 'Verify | steamcmd'
       ansible.builtin.shell: >-
         /usr/games/steamcmd

@@ -79,7 +79,11 @@ steam_srv_wine_raw_network_enable: false
 # User that steamcmd will run under.
 #
 # Enable steam_srv_create_user if this account is not externally managed.
-# Steamcmd will be installed under ~/.steam.
+#
+# Locations (standard steam locations):
+# * ~/.steam/steam -> ~/.local/share/Steam.
+# * ~/.steam/root -> ~/.local/share/Steam.
+# * ~/.local/share - steam/game state information (saves, user profiles).
 #
 # Default: 'steam'.
 steam_srv_user: 'steam'
@@ -97,24 +101,3 @@ steam_srv_group: 'steam'
 #
 # Default: True.
 steam_srv_create_user: true
-
-# Root backup location.
-#
-# Backups will be placed in sub-directories in this location, e.g.
-# /srv/backup/conan_exiles.
-#
-# Default: '/srv/backup'.
-steam_srv_backup_root: '/srv/backup'
-
-# Enable user management of media files?
-#
-# Use steam_srv_user to execute media management commands. Role applies media
-# permissions using 'root' by default. For mounted data locations (NFS with
-# squashed mounts, mapped container mounts, etc) the local root user will not
-# have sufficient privileges to modify these files.
-#
-# Applies to:
-# * steam_srv_backup_root
-#
-# Default: False.
-steam_srv_user_data_manage_enable: false

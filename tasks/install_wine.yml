@@ -16,7 +16,7 @@
       - '{{ steam_role_wine_packages }}'
     apt_sources: '{{
         steam_role_wine_sources
-        if steam_srv_auto_add_apt_sources_enable else
+        if _steam_srv_auto_add_apt_sources_enable.raw else
         []
       }}'
     apt_package_update_cache: true

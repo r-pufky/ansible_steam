@@ -7,8 +7,6 @@
 # Steamcmd is installed and usable by steam user with no errors.
 #
 # Tests:
-# * /srv/backup created with correct permissions.
-# * steam_srv_user_data_manage_enable directories created.
 # * steamcmd works correctly.
 
 dependency:
@@ -23,10 +21,6 @@ provisioner:
       callback_whitelist: 'profile_tasks, timer, yaml'
     ssh_connection:
       pipelining: false
-  inventory:
-    host_vars:
-      steam-debian-13-user_data:
-        steam_srv_user_data_manage_enable: true
 platforms:
   - name: 'steam-debian-13-default'
     image: 'ghcr.io/hifis-net/debian-systemd:13'
