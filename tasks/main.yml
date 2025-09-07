@@ -11,10 +11,10 @@
   ansible.builtin.include_tasks: 'download.yml'
   vars:
     root: '{{ steam_role_metamod_dest }}'
-    file: '{{ _steam_srv_metamod_enable.role_file }}'
+    file: '{{ _steam_srv_metamod_enable.role_archive }}'
     url: '{{
         _steam_srv_metamod_enable.role_url ~
-        _steam_srv_metamod_enable.role_file
+        _steam_srv_metamod_enable.role_archive
       }}'
 
 - name: 'Install sourcemod'
@@ -22,10 +22,10 @@
   ansible.builtin.include_tasks: 'download.yml'
   vars:
     root: '{{ steam_role_sourcemod_dest }}'
-    file: '{{ _steam_srv_sourcemod_enable.role_file }}'
+    file: '{{ _steam_srv_sourcemod_enable.role_archive }}'
     url: '{{
         _steam_srv_sourcemod_enable.role_url ~
-        _steam_srv_sourcemod_enable.role_file
+        _steam_srv_sourcemod_enable.role_archive
       }}'
 
 - name: 'Install wine'

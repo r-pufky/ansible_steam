@@ -14,19 +14,27 @@ use during setup of dedicated servers (standard role variable scope):
  Variable                    | type | Description
 -----------------------------|------|-----------------------------------------
  _steam_srv_user             | dict | Resolved steam user metadata.
-   .raw                      | str  | Resolved steam user name.
-   .role_uid                 | str  | Resolved steam user UID.
-   .role_home                | str  | Resolved steam user home directory.
-   .role_share               | str  | Resolved steam user local shared directory.
+   .raw                      | str  | Resolved user name.
+   .role_uid                 | str  | Resolved user UID.
+   .role_home                | str  | Absolute path resolved home dir.
+   .role_share               | str  | Absolute path resolved local shared dir.
  _steam_srv_group            | dict | Resolved steam group metadata.
-   .raw                      | str  | Resolved steam group name.
-   .role_gid                 | str  | Resolved steam group GID.
- _steam_srv_metamod_enable   | dict | Resolved steam metamod download.
-   .role_url                 | str  | Resolved metamod source URL.
-   .role_file                | str  | Resolved metamod downloaded filename.
- _steam_srv_sourcemod_enable | dict | Resolved steam sourcemod download.
-   .role_url                 | str  | Resolved sourcemod source URL.
-   .role_file                | str  | Resolved sourcemod downloaded filename.
+   .raw                      | str  | Resolved group name.
+   .role_gid                 | str  | Resolved group GID.
+ _steam_srv_metamod_enable   | dict | Resolved metamod download.
+   .role_url                 | str  | Source URL.
+   .role_archive             | str  | Archive filename.
+   .role_archive_path        | str  | Absolute path local downloaded archive.
+   .role_dirs                | list | (str) Relative install directories.
+   .role_files               | list | (str) Relative install files.
+   .role_version             | str  | Metamod parsed version string.
+ _steam_srv_sourcemod_enable | dict | Resolved sourcemod download.
+   .role_url                 | str  | Source URL.
+   .role_archive             | str  | Archive filename.
+   .role_archive_path        | str  | Absolute path local downloaded archive.
+   .role_dirs                | list | (str) Relative install directories.
+   .role_files               | list | (str) Relative install files.
+   .role_version             | str  | Sourcemod parsed version string.
 
 ## Dependencies
 **galaxy-ng** roles cannot be used independently. Part of

@@ -2,14 +2,13 @@
 ###############################################################################
 # Steam Role Options.
 ###############################################################################
-# Install steamcmd with optional base dependencies for running windows servers.
-# Pre-configured servers will install all files and services required to run a
-# game. Servers require additional space listed in each game.
+# Install steamcmd with optional base dependencies for windows servers. Servers
+# require additional space listed in each game.
 #
 # Install size: ~162MB
 #     Steamcmd: ~4.3MB (base).
 #      Metamod: ~4.7MB.
-#    Sourcemod: ~71.4MB.
+#    Sourcemod: ~195MB.
 #   Winetricks: ~3.6MB (base).
 #     Packages: ~55MB.
 
@@ -27,7 +26,7 @@ steam_srv_auto_add_apt_sources_enable: true
 
 # Number of times to retry failed downloads?
 #
-# Currently applies to metamod, sourcemod.
+# Applies to metamod, sourcemod.
 #
 # Default: 3.
 steam_srv_download_retries: 3

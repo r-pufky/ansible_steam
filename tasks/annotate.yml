@@ -107,11 +107,24 @@
       default: false,
       role_url:
         '{{ steam_role_metamod_url ~ steam_srv_metamod_branch ~ "/" }}',
-      role_file: '{{
+      role_archive: '{{
           "mmsource-" ~
           steam_srv_metamod_branch ~ ".0-git" ~
           steam_srv_metamod_build ~ "-linux.tar.gz"
         }}',
+      role_archive_path: '{{
+          steam_role_metamod_dest ~
+          "/mmsource-" ~
+          steam_srv_metamod_branch ~ ".0-git" ~
+          steam_srv_metamod_build ~ "-linux.tar.gz"
+        }}',
+      role_dirs: ['/addons/metamod'],
+      role_files: [
+        'metamod.vdf',
+        'metamod_x64.vdf',
+      ],
+      role_version:
+        '{{ steam_srv_metamod_branch ~ "." ~ steam_srv_metamod_build }}',
       hint: 'bool',
       added: '0.0.0',
       sensitive: false,
@@ -147,11 +160,26 @@
       default: false,
       role_url:
         '{{ steam_role_sourcemod_url ~ steam_srv_sourcemod_branch ~ "/" }}',
-      role_file: '{{
+      role_archive: '{{
           "sourcemod-" ~
           steam_srv_sourcemod_branch ~ ".0-git" ~
           steam_srv_sourcemod_build ~ "-linux.tar.gz"
         }}',
+      role_archive_path: '{{
+          steam_role_sourcemod_dest ~
+          "/sourcemod-" ~
+          steam_srv_sourcemod_branch ~ ".0-git" ~
+          steam_srv_sourcemod_build ~ "-linux.tar.gz"
+        }}',
+      role_dirs: [
+        '/addons/sourcemod',
+        '/cfg/sourcemod',
+      ],
+      role_files: [
+        '/addons/metamod/sourcemod.vdf',
+      ],
+      role_version:
+        '{{ steam_srv_sourcemod_branch ~ "." ~ steam_srv_sourcemod_build }}',
       hint: 'bool',
       added: '0.0.0',
       sensitive: false,
