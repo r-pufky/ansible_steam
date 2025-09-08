@@ -35,13 +35,7 @@ steam_role_packages:
   - 'gnupg2'
   - 'tar'
   - 'xz-utils'
-  # - 'lib32gcc-s1'
-  # - 'libsdl2-2.0-0'  # SDL support.
-  # - 'libsdl2-2.0-0:i386'  # SDL support i386.
   - 'steamcmd'
-  # - 'gdb'  # -debug support.
-  # - 'libc6'  # -debug support.
-  # - 'libc6:i386'  # -debug support i386.
 
 steam_role_apt_sources:
   - name: 'debian'

@@ -5,10 +5,11 @@
 # Install steamcmd with optional base dependencies for windows servers. Servers
 # require additional space listed in each game.
 #
-# Install size: ~162MB
+# Install size: ~2.3GB
 #     Steamcmd: ~4.3MB (base).
 #      Metamod: ~4.7MB.
 #    Sourcemod: ~195MB.
+#         Wine: ~2GB.
 #   Winetricks: ~3.6MB (base).
 #     Packages: ~55MB.
 
