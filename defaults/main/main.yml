@@ -40,15 +40,23 @@ steam_srv_wine_enable: false
 
 # Wine release.
 #
+# TODO(stable): Trixie must use Wine 10.3+ to address broken packages due to
+#     location changes. staging/devel are currently the only releases above
+#     10.3. Update default to 'stable' when 10.3+ stable is released.
+#
 # Values:
-#    stable: Annual release - for most games (default).
+#    stable: Annual release - for most games.
 #   staging: Pre-annual release with experimental patches - typically contains
-#            patches for recent releases. Use only if 'stable' does not work.
+#            patches for recent releases. Use only if 'stable' does not work
+#            (default).
 #     devel: Bi-weekly release of development head - bleeding edge. Not
 #            recommended.
 #
-# Default: 'stable'.
-steam_srv_wine_release: 'stable'
+# Default: 'staging'.
+#
+# Reference:
+# * https://bugs.winehq.org/show_bug.cgi?id=57859
+steam_srv_wine_release: 'staging'
 
 # Winetricks release.
 #

@@ -4,8 +4,18 @@
 ###############################################################################
 # Default required packages for Steam install.
 #
-# '-debug' requires GDB and c++6 for `srcds_run` which prevents PID error and
-# auto reboot every 10 seconds.
+# Updates:
+# * Version is determined by debian package.
+# * New MAJOR, MINOR releases should hard branch at version before starting
+#   (e.g. 2.14.x branch).
+# * Keep a separate change log as changes are made, you will not remember all
+#   of them.
+# * Update role defaults (includes updating defaults, tasks):
+#   * Use configuration docs to add new variables.
+#   * Use defaults/ to remove any changed/deprecated variables.
+# * Update tests for any changes.
+# * Standard role validation testing (yamllint, ansible-lint, todo, noqa).
+# * Tag with OS-APP-ROLE version.
 #
 # Reference:
 # * https://forums.alliedmods.net/showthread.php?t=300118

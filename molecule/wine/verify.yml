@@ -28,3 +28,47 @@
           │                                                                   │
           ├───────────────────────────────────────────────────────────────────╯
           │ Exit code: {{ _test_steamcmd.rc }}
+
+    - name: 'Verify | wine'
+      ansible.builtin.shell: 'wine --version'
+      args:
+        executable: '/bin/bash'
+        chdir: '/home/steam'
+      changed_when: false
+      register: _test_wine
+      become: true
+      become_user: 'steam'
+
+    - name: 'Verify | assert wine successful'
+      ansible.builtin.assert:
+        quiet: true
+        that: _test_wine.rc == 0
+        fail_msg: |
+          ╭───────────────────────────────────────────────────────────────────╮
+          │                                                                   │
+          │                           Wine failed.                            │
+          │                                                                   │
+          ├───────────────────────────────────────────────────────────────────╯
+          │ Exit code: {{ _test_wine.rc }}
+
+    - name: 'Verify | winetricks'
+      ansible.builtin.shell: 'winetricks list-installed'
+      args:
+        executable: '/bin/bash'
+        chdir: '/home/steam'
+      changed_when: false
+      register: _test_winetricks
+      become: true
+      become_user: 'steam'
+
+    - name: 'Verify | assert winetricks successful'
+      ansible.builtin.assert:
+        quiet: true
+        that: _test_winetricks.rc == 0
+        fail_msg: |
+          ╭───────────────────────────────────────────────────────────────────╮
+          │                                                                   │
+          │                        Winetricks failed.                         │
+          │                                                                   │
+          ├───────────────────────────────────────────────────────────────────╯
+          │ Exit code: {{ _test_winetricks.rc }}

@@ -47,11 +47,11 @@ dedicated servers.
 
 roles/my_custom_role/tasks/task.yml
 ``` yaml
-- name: 'Install | steamcmd'
+- name: 'Install steamcmd'
   ansible.builtin.import_role:
     name: 'r_pufky.game.steam'
 
-- name: 'Install | cache steam user'
+- name: 'Cache steam user'
   ansible.builtin.set_fact:
     my_server:
       user: '{{ _steam_srv_user.raw }}'
@@ -62,10 +62,45 @@ roles/my_custom_role/tasks/task.yml
       share: '{{ _steam_srv_user.role_share }}'
       saves: '{{ _steam_srv_user.role_share ~ "/7DaysToDie/Saves" }}'
 
-- name: 'Install | install dedicated server'
+- name: 'Install dedicated linux server'
   ansible.builtin.shell: >-
     /usr/games/steamcmd
     +@sSteamCmdForcePlatformType linux
+    +force_install_dir /home/steam/my_server
+    +login anonymous
+    +app_update 1234567
+    +quit
+  args:
+    executable: '/bin/bash'
+    chdir: '{{ my_server.home }}'
+  changed_when: false
+  become: true
+  become_user: '{{ my_server.user }}'
+```
+
+Windows dedicated servers may be installed and run via Wine:
+``` yaml
+- name: 'Install steamcmd with wine, winetricks'
+  ansible.builtin.import_role:
+    name: 'r_pufky.game.steam'
+  vars:
+    steam_srv_wine_enable: true
+
+- name: 'Cache steam user'
+  ansible.builtin.set_fact:
+    my_server:
+      user: '{{ _steam_srv_user.raw }}'
+      uid: '{{ _steam_srv_user.role_uid }}'
+      group: '{{ _steam_srv_group.raw }}'
+      gid: '{{ _steam_srv_group.role_gid }}'
+      home: '{{ _steam_srv_user.role_home }}'
+      share: '{{ _steam_srv_user.role_share }}'
+
+- name: 'Install dedicated windows server'
+  when: seven_days_to_die_srv_update_server
+  ansible.builtin.shell: >-
+    /usr/games/steamcmd
+    +@sSteamCmdForcePlatformType windows
     +force_install_dir /home/steam/my_server
     +login anonymous
     +app_update 1234567
