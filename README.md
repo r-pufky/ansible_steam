@@ -38,7 +38,7 @@ use during setup of dedicated servers (standard role variable scope):
 
 ## Dependencies
 **galaxy-ng** roles cannot be used independently. Part of
-[r_pufky.deb](https://github.com/r-pufky/ansible_collection_deb) collection.
+[r_pufky.game](https://github.com/r-pufky/ansible_collection_game) collection.
 
 ## Example Playbook
 This role is intended to be called to setup base requirements for running a
