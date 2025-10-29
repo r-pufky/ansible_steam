@@ -8,7 +8,7 @@
 #
 # Enable live API commands.
 #
-#   molecule test -s steam -- -v -e 'steam_live_api_enable=true'
+#   molecule test -s steam -- -v -e '{"steam_live_api_enable": true}'
 #
 # Tests:
 # * Metamod is downloaded correctly.
