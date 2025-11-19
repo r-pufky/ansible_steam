@@ -45,6 +45,9 @@ This role is intended to be called to setup base requirements for running a
 dedicated server on linux. `steamcmd` is ready to be executable to install
 dedicated servers.
 
+[Additional documentation](http://r-pufky.github.io/r-pufky/docs/games/steam).
+
+
 roles/my_custom_role/tasks/task.yml
 ``` yaml
 - name: 'Install steamcmd'
