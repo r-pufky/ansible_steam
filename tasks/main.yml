@@ -4,15 +4,15 @@
 
 - name: 'Metamod'
   when: steam_flg_metamod
-  ansible.builtin.include_tasks: 'metamod.yml'
+  ansible.builtin.import_tasks: 'metamod.yml'
 
 - name: 'Sourcemod'
   when: steam_flg_sourcemod
-  ansible.builtin.include_tasks: 'sourcemod.yml'
+  ansible.builtin.import_tasks: 'sourcemod.yml'
 
 - name: 'Wine'
   when: steam_flg_wine
-  ansible.builtin.include_tasks: 'wine.yml'
+  ansible.builtin.import_tasks: 'wine.yml'
 
 - name: 'Export resolved variables'
   ansible.builtin.set_fact:
