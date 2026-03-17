@@ -1,33 +1,37 @@
 ---
-- name: 'Annotate'
-  ansible.builtin.include_tasks: 'annotate.yml'
 - name: 'Prep'
-  ansible.builtin.include_tasks: 'prep.yml'
-- name: 'Install steamcmd'
-  ansible.builtin.include_tasks: 'install_steamcmd.yml'
+  ansible.builtin.import_tasks: 'prep.yml'
 
-- name: 'Install metamod'
-  when: _steam_srv_metamod_enable.raw
-  ansible.builtin.include_tasks: 'download.yml'
-  vars:
-    root: '{{ steam_role_metamod_dest }}'
-    file: '{{ _steam_srv_metamod_enable.role_archive }}'
-    url: '{{
-        _steam_srv_metamod_enable.role_url ~
-        _steam_srv_metamod_enable.role_archive
-      }}'
+- name: 'Metamod'
+  when: steam_flg_metamod
+  ansible.builtin.include_tasks: 'metamod.yml'
 
-- name: 'Install sourcemod'
-  when: _steam_srv_sourcemod_enable.raw
-  ansible.builtin.include_tasks: 'download.yml'
-  vars:
-    root: '{{ steam_role_sourcemod_dest }}'
-    file: '{{ _steam_srv_sourcemod_enable.role_archive }}'
-    url: '{{
-        _steam_srv_sourcemod_enable.role_url ~
-        _steam_srv_sourcemod_enable.role_archive
-      }}'
+- name: 'Sourcemod'
+  when: steam_flg_sourcemod
+  ansible.builtin.include_tasks: 'sourcemod.yml'
 
-- name: 'Install wine'
-  when: _steam_srv_wine_enable.raw
-  ansible.builtin.include_tasks: 'install_wine.yml'
+- name: 'Wine'
+  when: steam_flg_wine
+  ansible.builtin.include_tasks: 'wine.yml'
+
+- name: 'Export resolved variables'
+  ansible.builtin.set_fact:
+    steam__ctx: "{{ {} | r_pufky.data.v3(
+
+        _user=steam__srv._user,
+        _group=steam__srv._group,
+        _uid=steam__srv._uid,
+        _gid=steam__srv._gid,
+        _home=steam__srv._home,
+        _share=steam__srv._share_dir,
+        _metamod_package=steam__mm._package,
+        _metamod_archive=steam__mm._dest,
+        _metamod_version=steam__mm._version,
+        _metamod_dirs=steam___mm._rel_dirs,
+        _metamod_files=steam___mm._rel_files,
+        _sourcemod_package=steam__sm._package,
+        _sourcemod_archive=steam__sm._dest,
+        _sourcemod_version=steam__sm._version,
+        _sourcemod_dirs=steam___sm._rel_dirs,
+        _sourcemod_files=steam___sm._rel_files,
+      ) }}"

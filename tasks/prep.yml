@@ -1,61 +1,209 @@
 ---
 ###############################################################################
-# Steam Prep
+# Pre Execution Tasks
 ###############################################################################
-# Prepare system for install by creating user/group for service, and
-# enumerating existing SSH keys if used. Stop services if they exist.
+# Only use data annotations in role after merging role, defaults, runtime data.
+# Resolve system UID/GID and prep filesystem with required directories/packages
+# for all individual install options. Always install steamcmd.
 
-- name: 'Prep | manage users'
-  when: _steam_srv_create_user.raw
-  ansible.builtin.include_role:
-    name: 'r_pufky.deb.users'
-    tasks_from: 'role_account_add.yml'
-  vars:
-    users_role_user: '{{ steam_role_user }}'
-    users_role_group: '{{ steam_role_group }}'
-
-- name: 'Prep | enumerate system user {{ _steam_srv_user.raw }}'
-  ansible.builtin.user:
-    name: '{{ _steam_srv_user.raw }}'
-  check_mode: true
-  changed_when: false
-  register: _steam_srv_user_query
-
-- name: 'Prep | parse system user UID/GID'
+- name: 'Prep | fact | force steam_flg_metamod=true (steam_flg_sourcemod)'
+  when: steam_flg_sourcemod
   ansible.builtin.set_fact:
-    _steam_srv_user: '{{
-        _steam_srv_user |
-        combine({"role_uid": _steam_srv_user_query.uid,
-                 "role_home": _steam_srv_user_query.home,
-                 "role_share": _steam_srv_user_query.home ~ "/.local/share"})
-      }}'
-    _steam_srv_group: '{{
-        _steam_srv_group |
-        combine({"role_gid": _steam_srv_user_query.group})
-      }}'
+    steam_flg_metamod: true
 
-- name: 'Prep | set debconf steam licensed viewed'
+- name: 'Prep | fact | record start time'
+  ansible.builtin.set_fact:
+    steam__srv: "{{ {} | r_pufky.data.v3(
+
+        _start=now(utc=True, fmt='%Y-%m-%dT%H%M%S'),
+        _token=steam_srv_token,
+        _raw_network=steam_srv_raw_network,
+        _user=steam_srv_user,
+        _group=steam_srv_group,
+      ) }}"
+    # Pre-parse multi-variant configurations.
+    steam__cfg: "{{ steam___release | r_pufky.data.v3(
+
+        _mod_branch=steam_cfg_mod_branch,
+        _mm_build=steam_cfg_mm_build,
+        _sm_build=steam_cfg_sm_build,
+        _wine_branch=steam_cfg_wine_branch,
+        _wine_tricks=steam_cfg_wine_tricks,
+
+        _mm_package=(
+          'mmsource-' ~ steam_cfg_mod_branch ~ '.0-git' ~
+          steam_cfg_mm_build ~ '-linux.tar.gz'
+        ),
+        _sm_package=(
+          'sourcemod-' ~ steam_cfg_mod_branch ~ '.0-git' ~
+          steam_cfg_sm_build ~ '-linux.tar.gz'
+        ),
+        _wt_package=steam_cfg_wine_tricks ~ '.tar.gz',
+      ) }}"
+
+- name: 'Prep | fact | generate runtime config'
+  ansible.builtin.set_fact:
+    steam__mm: "{{ steam___mm | r_pufky.data.v3(
+
+        _branch=steam__cfg._mod_branch,
+        _build=steam__cfg._mm_build,
+        _package=steam__cfg._mm_package,
+        _version=steam__cfg._mod_branch ~ '.' ~ steam__cfg._mm_build,
+
+        _dest=steam___mm._src_dir ~ '/' ~ steam__cfg._mm_package,
+        _url=(
+          steam___mm_repo_url ~ steam__cfg._mod_branch ~ '/' ~
+          steam__cfg._mm_package
+        ),
+      ) }}"
+    steam__sm: "{{ steam___sm | r_pufky.data.v3(
+
+        _branch=steam__cfg._mod_branch,
+        _build=steam__cfg._sm_build,
+        _package=steam__cfg._sm_package,
+        _version=steam__cfg._mod_branch ~ '.' ~ steam__cfg._sm_build,
+
+        _dest=steam___sm._src_dir ~ '/' ~ steam__cfg._sm_package,
+        _url=(
+          steam___sm_repo_url ~ steam__cfg._mod_branch ~ '/' ~
+          steam__cfg._sm_package
+        ),
+      ) }}"
+    steam__wine: "{{ steam___wine | r_pufky.data.v3(
+
+        _branch=steam__cfg._wine_branch,
+        _tricks=steam__cfg._wine_tricks,
+        _package=steam__cfg._wt_package,
+
+        _dest=steam___wine._src_dir ~ '/' ~ steam__cfg._wine_tricks,
+        _url=steam___wine_tricks_repo_url ~ steam__cfg._wt_package,
+      ) }}"
+
+- name: 'Prep | debconf | set licensed viewed'
   ansible.builtin.debconf:
     name: 'steam'
     question: 'steam/license'
     value: "note ''"
     vtype: 'string'
 
-- name: 'Prep | set debconf steam license accepted'
+- name: 'Prep | debconf | set license accepted'
   ansible.builtin.debconf:
     name: 'steam'
     question: 'steam/question'
     value: 'I AGREE'
     vtype: 'select'
 
-- name: 'Prep | set debconf wine CAP_NET_RAW'
-  when: _steam_srv_wine_raw_network_enable.raw
+- name: 'Prep | debconf | set wine CAP_NET_RAW'
+  when: steam_flg_wine
   ansible.builtin.debconf:
-    name: 'wine-{{ _steam_srv_wine_release.raw }}{{ item }}'
-    question: '{{ _steam_srv_wine_raw_network_enable.role_question }}'
-    value: '{{ _steam_srv_wine_raw_network_enable.role_value }}'
+    name: '{{ "wine-" ~ steam__wine._branch ~ item }}'
+    question: 'wine/setcaps'
+    value: '{{ steam__srv._raw_network | lower }}'
     vtype: 'boolean'
   loop:
     - ''
     - '-amd64'
     - '-i386'
+
+- name: 'Install | enable i386 architecture support'
+  ansible.builtin.command: 'dpkg --add-architecture i386'
+  args:
+    creates: '/var/lib/dpkg/arch'
+
+- name: 'Prep | packages'
+  when: steam_flg_apt_sources
+  ansible.builtin.include_role:
+    name: 'r_pufky.deb.apt'
+  vars:
+    apt_packages:
+      - '{{ steam___packages }}'
+      - '{{ steam___wine_packages if steam_flg_wine else [] }}'
+      - '{{ "winehq-" ~ steam__wine._branch if steam_flg_wine else [] }}'
+    apt_sources: '{{
+
+        (
+          (steam___apt_sources if steam_flg_apt_sources else []) +
+          (
+            steam___wine_sources
+            if steam_flg_wine and steam_flg_apt_sources else
+            []
+          )
+        ) | select ()
+      }}'
+    apt_srv_sources_list_disable: true
+    apt_srv_package_update_cache: true
+
+- name: '{{ "Prep | account | query user " ~ steam__srv._user }}'
+  ansible.builtin.command: '{{ "id " ~ steam__srv._user }}'
+  failed_when: false
+  register: steam__cfg_check
+  changed_when: steam__cfg_check.rc > 0
+
+- name: '{{ "Prep | account | query group " ~ steam__srv._group }}'
+  ansible.builtin.command: '{{ "groups " ~ steam__srv._group }}'
+  failed_when: false
+  register: steam__group_check
+  changed_when: steam__group_check.rc > 0
+
+- name: '{{ "Prep | account | create group " ~ steam__srv._group }}'
+  when: steam__group_check.rc != 0
+  ansible.builtin.group:
+    gid: '{{ steam___group.gid }}'
+    name: '{{ steam___group.name }}'
+    state: 'present'
+
+- name: '{{ "Prep | account | create user " ~ steam__srv._user }}'
+  when: steam__cfg_check.rc != 0
+  ansible.builtin.user:
+    name: '{{ steam___user.name }}'
+    group: '{{ steam___user.group }}'
+    uid: '{{ steam___user.uid }}'
+    shell: '{{ steam___user.shell }}'
+    home: '{{ steam___user.home }}'
+    create_home: '{{ steam___user.create_home }}'
+    password: '{{ steam___user.password }}'
+    password_lock: '{{ steam___user.password_lock }}'
+    update_password: '{{ steam___user.update_password }}'
+    expires: '{{ steam___user.expires }}'
+
+# Pre-existing users may have a different UID/GID/Home.
+- name: '{{ "Prep | account | enumerate " ~ steam__srv._user }}'
+  ansible.builtin.user:
+    name: '{{ steam__srv._user }}'
+  check_mode: true
+  changed_when: false
+  register: steam__cfg_query
+
+- name: 'Prep | fact | parse service UID/GID'
+  ansible.builtin.set_fact:
+    steam__srv: "{{ steam__srv | r_pufky.data.v3(
+
+        _uid=steam__cfg_query.uid,
+        _gid=steam__cfg_query.group,
+        _home=steam__cfg_query.home,
+        _share_dir=steam__cfg_query.home ~ '/.local/share',
+      ) }}"
+
+###############################################################################
+# steamcmd
+###############################################################################
+# steamcmd is force updated on login.
+#
+# Reference:
+# * https://developer.valvesoftware.com/wiki/SteamCMD#Linux
+
+- name: 'Prep | steamcmd | 🗘 updating (~2 minutes) 🗘'
+  ansible.builtin.debug:
+    msg: 'steamcmd is being updated (~2 minutes).'
+
+- name: 'Prep | steamcmd | login quit'
+  ansible.builtin.shell: >-
+    /usr/games/steamcmd
+    +login anonymous
+    +quit
+  args:
+    executable: '/bin/bash'
+    chdir: '{{ steam__srv._home }}'
+  changed_when: false
+  become: true
+  become_user: '{{ steam__srv._user }}'

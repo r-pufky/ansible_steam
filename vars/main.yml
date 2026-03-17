@@ -1,0 +1,219 @@
+---
+###############################################################################
+# Steam Role Options
+###############################################################################
+# Default required packages for Steam install.
+#
+# Updates:
+# * KEEP a separate change log as changes are made.
+# * Use bare-metal docs to validate package/process changes.
+# * Update defaults.
+# * Update tests for any changes.
+# * Standard validation testing (yamllint, ansible-lint, to-do, no-qa).
+#
+# Reference:
+# * https://forums.alliedmods.net/showthread.php?t=300118
+# * https://github.com/ValveSoftware/steam-for-linux/issues/7036
+
+steam___release: "{{ {} | r_pufky.data.v3(
+
+    _date='2026-03-17',
+    _debian='trixie',
+    _mod_branch='1.12',
+    _metamod_build='1219',
+    _sourcemod_build='7223',
+    _wine_branch='stable',
+    _wine_tricks='20260125',
+  ) }}"
+
+###############################################################################
+# APT Packages
+###############################################################################
+# Steamcmd requires non-free.
+
+steam___packages:
+  - 'steamcmd'
+  - 'acl'  # ansible become: {USER} support.
+  - 'gnupg2'  # GPG signature validation.
+  - 'tar'  # tar archives.
+  - 'ca-certificates'  # SSL support for ansible.builtin.get_url.
+  - 'xz-utils'  # xz archives.
+
+steam___apt_sources:
+  - name: 'debian'
+    types:
+      - 'deb'
+      - 'deb-src'
+    uris: 'http://deb.debian.org/debian'
+    suites:
+      - 'trixie'
+      - 'trixie-updates'
+      - 'trixie-backports'
+    components:
+      - 'main'
+      - 'contrib'
+      - 'non-free'
+      - 'non-free-firmware'
+    signed_by: '/usr/share/keyrings/debian-archive-keyring.gpg'
+  - name: 'debian-security'
+    types:
+      - 'deb'
+      - 'deb-src'
+    uris: 'http://deb.debian.org/debian-security'
+    suites:
+      - 'trixie-security'
+    components:
+      - 'main'
+      - 'contrib'
+      - 'non-free'
+      - 'non-free-firmware'
+    signed_by: '/usr/share/keyrings/debian-archive-keyring.gpg'
+
+###############################################################################
+# Wine
+###############################################################################
+# Wine release source downloads. Debian requires source installation as APT
+# packages are generally out of date.
+#
+# Reference:
+# * https://dl.winehq.org/wine-builds
+
+steam___wine_packages:
+  - 'xvfb'  # Lightweight window manager.
+  - 'winbind'  # Windows user/group resolution.
+  - 'libasound2-plugins'  # asound.
+  - 'libasound2-plugins:i386'  # asound i386.
+
+steam___wine_sources:
+  - name: 'winehq'
+    types:
+      - 'deb'
+    uris: 'https://dl.winehq.org/wine-builds/debian'
+    suites:
+      - 'trixie'
+    components:
+      - 'main'
+    architectures:
+      - 'amd64'
+      - 'i386'
+    signed_by: 'https://dl.winehq.org/wine-builds/winehq.key'
+
+###############################################################################
+# Meta/Source Mod
+###############################################################################
+# Inter-dependencies with multi-variant configuration. When installed together
+# branches must match. Metamod can be used without Sourcemod, but Sourcemod
+# requires Metamod.
+#
+# Each mod installs portions of the other when unpacking, resulting in files
+# that may need to be removed when install both or separate. These files and
+# directories are kept in lists and exported for consumers to process as
+# needed.
+#
+# Reference:
+# * https://www.metamodsource.net/downloads.php
+# * https://www.sourcemod.net/downloads.php
+
+steam___mm_repo_url: 'https://mms.alliedmods.net/mmsdrop/'
+steam___mm_version:
+  '{{ steam___release._mod_branch ~ "-" ~ steam___release._metamod_build }}'
+steam___mm_package: '{{
+    "mmsource-" ~ steam___release._mod_branch ~ ".0-git" ~
+    steam___release._metamod_build ~ "-linux.tar.gz"
+  }}'
+
+steam___sm_repo_url: 'https://sm.alliedmods.net/smdrop/'
+steam___sm_version:
+  '{{ steam___release._mod_branch ~ "-" ~ steam___release._sourcemod_build }}'
+steam___sm_package: '{{
+    "sourcemod-" ~ steam___release._mod_branch ~ ".0-git" ~
+    steam___release._sourcemod_build ~ "-linux.tar.gz"
+  }}'
+
+steam___mm: "{{ {} | r_pufky.data.v3(
+
+    _branch=steam___release._mod_branch,
+    _build=steam___release._metamod_build,
+    _version=(
+      steam___release._mod_branch ~ '.' ~ steam___release._metamod_build
+    ),
+
+    _package=steam___mm_package,
+    _opt_dir='/opt/metamod',
+    _src_dir='/opt/metamod/src',
+    _dest='/opt/metamod/src/' ~ steam___sm_package,
+    _url=(
+      steam___mm_repo_url ~ steam___release._mod_branch ~ '/' ~
+      steam___mm_package
+    ),
+    _rel_dirs=['/addons/metamod'],
+    _rel_files=['metamod.vdf','metamod_x64.vdf'],
+  ) }}"
+
+steam___sm: "{{ {} | r_pufky.data.v3(
+
+    _branch=steam___release._mod_branch,
+    _build=steam___release._sourcemod_build,
+    _version=(
+      steam___release._mod_branch ~ '.' ~ steam___release._sourcemod_build
+    ),
+
+    _package=steam___sm_package,
+    _opt_dir='/opt/metamod',
+    _src_dir='/opt/metamod/src',
+    _dest='/opt/metamod/src/' ~ steam___sm_package,
+    _url=(
+      steam___sm_repo_url ~ steam___release._mod_branch ~ '/' ~
+      steam___sm_package
+    ),
+    _rel_dirs=['/addons/sourcemod','/cfg/sourcemod'],
+    _rel_files=['/addons/metamod/sourcemod.vdf'],
+  ) }}"
+
+###############################################################################
+# winetricks
+###############################################################################
+# winetricks release source downloads.
+#
+# TODO(winetricks): Enable GPG signature validation when author updates
+#     signing key (expired 2024-02-17 - https://github.com/austin987.gpg).
+#
+#     sqv --keyring key.gpg --signature-file FILE.tar.gz.asc FILE.tar.gz
+#
+# Reference:
+# * https://github.com/Winetricks/winetricks/releases
+
+steam___wine_tricks_repo_url:
+  'https://github.com/Winetricks/winetricks/archive/refs/tags/'
+steam___wine_tricks_package: '{{ steam___release._wine_tricks ~ ".tar.gz" }}'
+
+steam___wine: "{{ {} | r_pufky.data.v3(
+
+    _branch=steam___release._wine_branch,
+    _tricks=steam___release._wine_tricks,
+    _package=steam___wine_tricks_package,
+    _opt_dir='/opt/winetricks',
+    _src_dir='/opt/winetricks/src',
+    _dest='/opt/winetricks/src/' ~ steam___release._wine_tricks,
+    _url=steam___wine_tricks_repo_url ~ steam___wine_tricks_package,
+  ) }}"
+
+###############################################################################
+# Default Steam User/Group
+###############################################################################
+
+steam___group:
+  name: 'steam'
+  gid: 51000
+
+steam___user:
+  name: 'steam'
+  group: 'steam'
+  uid: 51000
+  shell: '/bin/bash'
+  home: '/home/steam'
+  create_home: true
+  password: '*'
+  password_lock: true
+  update_password: 'always'
+  expires: -1

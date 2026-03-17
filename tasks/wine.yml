@@ -1,0 +1,103 @@
+---
+###############################################################################
+# Install Wine
+###############################################################################
+# Install wine and winetricks. Enabling wine installs XVFB window manager.
+#
+# Reference:
+# * https://wiki.winehq.org/Debian
+# * https://wiki.winehq.org/Winetricks
+
+- name: 'Wine | filesystem | set system directories'
+  ansible.builtin.file:
+    path: '{{ steam__wine._src_dir }}'  # src_dir includes opt_dir.
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    state: 'directory'
+
+- name: 'Wine | cmd | 🗘 updating wine components (~2 minutes) 🗘'
+  ansible.builtin.debug:
+    msg: 'wine being updated (~2 minutes).'
+
+- name: 'Wine | cmd | 🗘 generate wine config (~1 minute) 🗘'
+  ansible.builtin.shell: 'winecfg'
+  args:
+    executable: '/bin/bash'
+    chdir: '{{ steam__srv._home }}'
+  changed_when: false
+  become: true
+  become_user: '{{ steam__srv._user }}'
+
+- name: 'Wine | cmd | 🗘 update wine (~2 minutes) 🗘'
+  ansible.builtin.shell: '/usr/bin/wineboot --update'
+  args:
+    executable: '/bin/bash'
+    chdir: '{{  steam__srv._home }}'
+  changed_when: false
+  become: true
+  become_user: '{{  steam__srv._user }}'
+
+- name: 'Wine | filesystem | find previous installations'
+  ansible.builtin.find:
+    paths: '{{ steam__wine._src_dir }}'
+    file_type: 'directory'
+    recurse: false
+    excludes:
+      - '{{ steam__wine._tricks }}'
+  register: steam__cmd
+
+- name: 'Wine | filesystem | remove previous installations'
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    state: 'absent'
+  loop: '{{ steam__cmd.files }}'
+  loop_control:
+    label: '{{ item.path }}'
+
+- name: 'Wine | url | 🗘 winetricks package (~1 minute) 🗘'
+  when: not (url_inject_enable | default(false))
+  ansible.builtin.get_url:
+    url: '{{ steam__wine._url }}'
+    dest: '{{ "/tmp/" ~ steam__wine._package }}'
+    force: false
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    headers:
+      Authorization: '{{ steam__srv._token | default(omit) }}'
+  register: steam__cmd
+  until: steam__cmd is succeeded
+
+- name: '{{ "Install | filesystem | set " ~ steam__wine._dest }}'
+  ansible.builtin.file:
+    path: '{{ steam__wine._dest }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    state: 'directory'
+
+- name: 'Wine | filesystem | unpack winetricks'
+  ansible.builtin.unarchive:
+    creates: '{{ steam__wine._dest ~ "/src/winetricks" }}'
+    src: '{{ "/tmp/" ~ steam__wine._package }}'
+    remote_src: true
+    dest: '{{ steam__wine._dest }}'
+    owner: 'root'
+    group: 'root'
+    mode: 'a-st'
+    extra_opts: ['--strip-components=1']
+  register: steam__cmd
+
+# wintricks is a shell script.
+- name: 'Wine | wine | install winetricks'
+  when: steam__cmd.changed  # noqa no-handler immediately.
+  ansible.builtin.copy:
+    remote_src: true
+    src: '{{ steam__wine._dest ~ "/src/winetricks"}}'
+    dest: '/usr/local/bin/winetricks'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    directory_mode: '0755'
+    force: true

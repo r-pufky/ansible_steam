@@ -2,7 +2,16 @@
 - name: 'Converge'
   hosts: 'all'
   gather_facts: false
+  become: true
   tasks:
-    - name: 'Converge | apply r_pufky.game.steam'
+    - name: 'Converge | role | r_pufky.game.steam'
       ansible.builtin.include_role:
         name: 'r_pufky.game.steam'
+
+    - name: 'Converge | assert | steam__ctx exported'
+      ansible.builtin.assert:
+        quiet: true
+        that: steam__ctx._user | length > 0
+        fail_msg: |
+
+          ✘ steam__ctx was not exported.

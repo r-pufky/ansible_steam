@@ -2,8 +2,9 @@
 - name: 'Verify'
   hosts: 'all'
   gather_facts: false
+  become: true
   tasks:
-    - name: 'Verify | steamcmd'
+    - name: 'Verify | cmd | steamcmd test'
       ansible.builtin.shell: >-
         /usr/games/steamcmd
         +@sSteamCmdForcePlatformType linux
@@ -13,18 +14,56 @@
         executable: '/bin/bash'
         chdir: '/home/steam'
       changed_when: false
-      register: _test_steamcmd
+      register: steam__test_cmd
       become: true
       become_user: 'steam'
 
-    - name: 'Verify | assert steamcmd successful'
+    - name: 'Verify | assert | steamcmd successful'
       ansible.builtin.assert:
         quiet: true
-        that: _test_steamcmd.rc == 0
+        that: steam__test_cmd.rc == 0
         fail_msg: |
-          ╭───────────────────────────────────────────────────────────────────╮
-          │                                                                   │
-          │                         Steamcmd failed.                          │
-          │                                                                   │
-          ├───────────────────────────────────────────────────────────────────╯
-          │ Exit code: {{ _test_steamcmd.rc }}
+
+          ✘ Steamcmd failed.
+
+          Exit code: {{ steam__test_cmd.rc }}
+
+    - name: 'Verify | cmd | wine version'
+      ansible.builtin.shell: 'wine --version'
+      args:
+        executable: '/bin/bash'
+        chdir: '/home/steam'
+      changed_when: false
+      register: steam__test_wine
+      become: true
+      become_user: 'steam'
+
+    - name: 'Verify | assert | wine successful'
+      ansible.builtin.assert:
+        quiet: true
+        that: steam__test_wine.rc == 0
+        fail_msg: |
+
+          ✘ Wine failed.
+
+          Exit code: {{ steam__test_wine.rc }}
+
+    - name: 'Verify | cmd | winetricks installed'
+      ansible.builtin.shell: 'winetricks list-installed'
+      args:
+        executable: '/bin/bash'
+        chdir: '/home/steam'
+      changed_when: false
+      register: steam__test_winetricks
+      become: true
+      become_user: 'steam'
+
+    - name: 'Verify | assert | winetricks successful'
+      ansible.builtin.assert:
+        quiet: true
+        that: steam__test_winetricks.rc == 0
+        fail_msg: |
+
+          ✘ Winetricks failed.
+
+          Exit code: {{ steam__test_winetricks.rc }}

@@ -1,52 +1,66 @@
 # Steam Manager
 Setup and manage steamcmd, wine, and winetricks for hosting dedicated servers.
 
-## Requirements
-[supported platforms](https://github.com/r-pufky/ansible_steam/blob/main/meta/main.yml)
+## [Requirements][i]
+Requires [r_pufky.game][g] galaxy-ng collection. See
+[reference documentation][h] for troubleshooting and config variables.
+
+* Steamcmd: 60MB
+* Metamod: ~5MB
+* Sourcemod: ~200MB
+* Wine: ~2GB
 
 ## Role Variables
-[defaults](https://github.com/r-pufky/ansible_steam/tree/main/defaults/main/)
+Detailed variable use documented in defaults. See usage for role operation.
 
-### Generated Variables
+* [defaults][j] - User configurable options.
+
+## Usage
+
+### Feature Flags
+Tasks are gated by feature flags and executed in the following order.
+
+  Step | Flag                  | Notes
+ ------|-----------------------|-------
+  1    | steam_flg_apt_sources | Force required APT sources.
+  2    | steam_flg_metamod     | Install Metamod.
+  3    | steam_flg_sourcemod   | Install Sourcemod.
+  4    | steam_flg_wine        | Install wine/winetricks.
+
+### Context Variables
 After successful execution the following variables are available for further
 use during setup of dedicated servers (standard role variable scope):
 
- Variable                    | type | Description
------------------------------|------|-----------------------------------------
- _steam_srv_user             | dict | Resolved steam user metadata.
-   .raw                      | str  | Resolved user name.
-   .role_uid                 | str  | Resolved user UID.
-   .role_home                | str  | Absolute path resolved home dir.
-   .role_share               | str  | Absolute path resolved local shared dir.
- _steam_srv_group            | dict | Resolved steam group metadata.
-   .raw                      | str  | Resolved group name.
-   .role_gid                 | str  | Resolved group GID.
- _steam_srv_metamod_enable   | dict | Resolved metamod download.
-   .role_url                 | str  | Source URL.
-   .role_archive             | str  | Archive filename.
-   .role_archive_path        | str  | Absolute path local downloaded archive.
-   .role_dirs                | list | (str) Relative install directories.
-   .role_files               | list | (str) Relative install files.
-   .role_version             | str  | Metamod parsed version string.
- _steam_srv_sourcemod_enable | dict | Resolved sourcemod download.
-   .role_url                 | str  | Source URL.
-   .role_archive             | str  | Archive filename.
-   .role_archive_path        | str  | Absolute path local downloaded archive.
-   .role_dirs                | list | (str) Relative install directories.
-   .role_files               | list | (str) Relative install files.
-   .role_version             | str  | Sourcemod parsed version string.
+  Variable                      | type        | Description
+ -------------------------------|-------------|-------------
+  steam__ctx._user              | str         | Resolved user name.
+  steam__ctx._group             | str         | Resolved group name.
+  steam__ctx._uid               | str         | Resolved user UID.
+  steam__ctx._gid               | str         | Resolved group GID.
+  steam__ctx._home              | str         | Absolute path resolved home dir.
+  steam__ctx._share             | str         | Absolute path resolved local shared dir.
+  steam__ctx._metamod_package   | str         | Metamod archive filename.
+  steam__ctx._metamod_archive   | str         | Absolute path to Metamod archive.
+  steam__ctx._metamod_version   | str         | Metamod parsed version string.
+  steam__ctx._metamod_dirs      | list of str | Relative Metamod install directories.
+  steam__ctx._metamod_files     | list of str | Relative Metamod install files.
+  steam__ctx._sourcemod_package | str         | Sourcemod archive filename.
+  steam__ctx._sourcemod_archive | str         | Absolute path to Sourcemod archive.
+  steam__ctx._sourcemod_version | str         | Sourcemod parsed version string.
+  steam__ctx._sourcemod_dirs    | list of str | Relative Sourcemod install directories.
+  steam__ctx._sourcemod_files   | list of str | Relative Sourcemod install files.
 
-## Dependencies
-**galaxy-ng** roles cannot be used independently. Part of
-[r_pufky.game](https://github.com/r-pufky/ansible_collection_game) collection.
+> NOTE:
+> Each mod installs portions of the other when unpacking, resulting in files
+> that may need to be removed between steps, depending on the specific game
+> setup. These files are tracked to simplify dedicated server setup.
+
+### Example Playbooks
 
 ## Example Playbook
 This role is intended to be called to setup base requirements for running a
-dedicated server on linux. `steamcmd` is ready to be executable to install
+dedicated server on linux. `steamcmd` is ready to be executed to install
 dedicated servers.
-
-[Additional documentation](http://r-pufky.github.io/r-pufky/docs/games/steam).
-
 
 roles/my_custom_role/tasks/task.yml
 ``` yaml
@@ -54,16 +68,9 @@ roles/my_custom_role/tasks/task.yml
   ansible.builtin.import_role:
     name: 'r_pufky.game.steam'
 
-- name: 'Cache steam user'
+- name: 'Caching steam context only needed if executing role multiple times.'
   ansible.builtin.set_fact:
-    my_server:
-      user: '{{ _steam_srv_user.raw }}'
-      uid: '{{ _steam_srv_user.role_uid }}'
-      group: '{{ _steam_srv_group.raw }}'
-      gid: '{{ _steam_srv_group.role_gid }}'
-      home: '{{ _steam_srv_user.role_home }}'
-      share: '{{ _steam_srv_user.role_share }}'
-      saves: '{{ _steam_srv_user.role_share ~ "/7DaysToDie/Saves" }}'
+    cached_context: '{{ steam__ctx }}'
 
 - name: 'Install dedicated linux server'
   ansible.builtin.shell: >-
@@ -75,10 +82,10 @@ roles/my_custom_role/tasks/task.yml
     +quit
   args:
     executable: '/bin/bash'
-    chdir: '{{ my_server.home }}'
+    chdir: '{{ steam__ctx._home }}'
   changed_when: false
   become: true
-  become_user: '{{ my_server.user }}'
+  become_user: '{{ steam__ctx._user }}'
 ```
 
 Windows dedicated servers may be installed and run via Wine:
@@ -87,17 +94,7 @@ Windows dedicated servers may be installed and run via Wine:
   ansible.builtin.import_role:
     name: 'r_pufky.game.steam'
   vars:
-    steam_srv_wine_enable: true
-
-- name: 'Cache steam user'
-  ansible.builtin.set_fact:
-    my_server:
-      user: '{{ _steam_srv_user.raw }}'
-      uid: '{{ _steam_srv_user.role_uid }}'
-      group: '{{ _steam_srv_group.raw }}'
-      gid: '{{ _steam_srv_group.role_gid }}'
-      home: '{{ _steam_srv_user.role_home }}'
-      share: '{{ _steam_srv_user.role_share }}'
+    steam_flg_wine: true
 
 - name: 'Install dedicated windows server'
   when: seven_days_to_die_srv_update_server
@@ -110,35 +107,55 @@ Windows dedicated servers may be installed and run via Wine:
     +quit
   args:
     executable: '/bin/bash'
-    chdir: '{{ my_server.home }}'
+    chdir: '{{ steam__ctx.home }}'
   changed_when: false
   become: true
-  become_user: '{{ my_server.user }}'
+  become_user: '{{ steam__ctx.user }}'
 ```
 
 ## Development
-Configure [environment](https://r-pufky.github.io/ansible_collection_docs/ansible/environment)
+Configure [environment][a].
 
-Run all unit tests:
 ``` bash
+# Run all tests.
 molecule test --all
 ```
 
-### Releases
-Major release versions track Debian release versions:
+Testing variables:
 
-* **[13.x.x](https://github.com/r-pufky/ansible_steam)**: 13 Trixie.
-* **[12.x.x](https://github.com/r-pufky/ansible_steam/tree/12.x)**: 12 Bookworm.
+  Variable          | type | Description
+ -------------------|------|-------------
+  url_inject_enable | bool | Disable **get_url** to inject files locally.
 
-### Issues
+### [Releases][b]
+Focused on service deployment with templated configuration to minimize role
+churn due to inconsistent and rapid rolling release cycle.
+
+  Release | Debian | Ansible | Notes
+ ---------|--------|---------|-------
+  1.x.x   | 13     | 2.20    | Ansible 2.20, feature flags, and semantic versioning.
+  0.x.x   | 12     | 2.11    | Migration from private repository.
+
+## Issues
 Create a bug and provide as much information as possible.
 
 Associate pull requests with a submitted bug.
 
 ## License
-[AGPL-3.0 License](https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0)
- [(direct link)](https://github.com/r-pufky/ansible_steam/blob/main/LICENSE)
+[AGPL-3.0 License][c] | [direct link][f]
 
 ## Author Information
-PGP Fingerprint: [466EEC2B67516C7117C85CE3A0BC35D16698BAB9](https://keys.openpgp.org/vks/v1/by-fingerprint/466EEC2B67516C7117C85CE3A0BC35D16698BAB9)
-| [github gist](https://gist.github.com/r-pufky/a8df36977c55b5bb20829267c4c49d22)
+PGP: [466EEC2B67516C7117C85CE3A0BC35D16698BAB9][d] | [github gist][e]
+
+
+[a]: https://r-pufky.github.io/ansible_docs
+[b]: https://semver.org/spec/v2.0.0
+[c]: https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0
+[d]: https://keys.openpgp.org/vks/v1/by-fingerprint/466EEC2B67516C7117C85CE3A0BC35D16698BAB9
+[e]: https://gist.github.com/r-pufky/a8df36977c55b5bb20829267c4c49d22
+
+[f]: https://github.com/r-pufky/ansible_steam/blob/main/LICENSE
+[g]: https://github.com/r-pufky/ansible_collection_game
+[h]: https://r-pufky.github.io/docs/games/steam
+[i]: https://github.com/r-pufky/ansible_steam/blob/main/meta/main.yml
+[j]: https://github.com/r-pufky/ansible_steam/tree/main/defaults/main/main.yml

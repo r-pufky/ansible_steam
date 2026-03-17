@@ -1,188 +1,152 @@
 ---
 ###############################################################################
-# Steam Role Options.
+# Feature Flags
 ###############################################################################
-# Install steamcmd with optional base dependencies for windows servers. Servers
-# require additional space listed in each game.
-#
-# Install size: ~2.3GB
-#     Steamcmd: ~4.3MB (base).
-#      Metamod: ~4.7MB.
-#    Sourcemod: ~195MB.
-#         Wine: ~2GB.
-#   Winetricks: ~3.6MB (base).
-#     Packages: ~55MB.
 
-# Automatically add Debian APT sources if required?
+# 1. Automatically add Debian APT sources?
 #
 # Additional APT components (contrib, non-free, non-free-firmware) are required
-# for Steam installation.
+# for Steam installation. winehq sources are installed if steam_flg_wine=true.
+# Original sources.list is disabled.
 #
-# winehq sources are install if steam_srv_wine_enable=true.
-#
-# Alternatively these sources must be manually added outside of this role.
+# Alternatively all sources must be manually added outside of this role.
 #
 # Default: True.
-steam_srv_auto_add_apt_sources_enable: true
+steam_flg_apt_sources: true
 
-# Number of times to retry failed downloads?
+# 2. Enable Metamod installation?
 #
-# Applies to metamod, sourcemod.
+# Install size: ~5MB
 #
-# Default: 3.
-steam_srv_download_retries: 3
+# Metamod will be downloaded to /opt/metamod. Specific games must manually
+# install Metamod based on game requirements and locations.
+#
+# Default: False.
+steam_flg_metamod: false
+
+# 3. Enable Sourcemod installation?
+#
+# Install size: ~200MB
+#
+# Enabling will automatically enable Metamod as a dependency. Sourcemod will be
+# downloaded to /opt/sourcemod. Specific games must manually install Sourcemod
+# based on game requirements and locations.
+#
+# Default: False.
+steam_flg_sourcemod: false
+
+# 4. Install wine/winetricks (windows support)?
+#
+# Install size: ~2GB
+#
+# Default: False.
+steam_flg_wine: false
 
 ###############################################################################
-# WINE Options
+# Service
 ###############################################################################
 
-# Install wine? Default: False.
-steam_srv_wine_enable: false
-
-# Wine release.
+# Github access token.
 #
-# TODO(stable): Trixie must use Wine 10.3+ to address broken packages due to
-#     location changes. staging/devel are currently the only releases above
-#     10.3. Update default to 'stable' when 10.3+ stable is released.
+# Unauthenticated (anonymous) API requests are heavily restricted to the sum
+# total of requests to github from a given IP. Use an access token if
+# receiving 403's.
 #
-# Values:
-#    stable: Annual release - for most games.
-#   staging: Pre-annual release with experimental patches - typically contains
-#            patches for recent releases. Use only if 'stable' does not work
-#            (default).
-#     devel: Bi-weekly release of development head - bleeding edge. Not
-#            recommended.
+# Classic Tokens:
+# * settings > developer settings > personal access tokens (classic)
+#   * notes: {LABEL APPROPRIATELY}
+#   * expiration: {CUSTOM}
+#   * scopes: NONE
 #
-# Default: 'staging'.
+# Fine-grained Tokens:
+# * settings > developer settings > personal access tokens (fine-grained)
+#   * token name: {LABEL APPROPRIATELY}
+#   * expiration: {CUSTOM}
+#   * description: {DESCRIPTIVE TEXT}
+#   * resource owner: {YOUR ACCOUNT}
+#   * repository access: Public Repositories (read-only)
 #
-# Reference:
-# * https://bugs.winehq.org/show_bug.cgi?id=57859
-steam_srv_wine_release: 'staging'
-
-# Winetricks release.
-#
-# Requires steam_srv_wine_release set.
-#
-# Always read release notes before updating versions. Role is only developed
-# for LTS releases.
-#
-# Versions (Date):
-#        DATE: Safe - Usually requires no role updates.
-#   RECOMMEND: Only increment DATE. Never use 'latest'.
-#
-# Values:
-#   {VERSION}: Tagged release to use ('20250102').
-#      latest: Use latest stable release.
-#
-# Default: '20250102'.
+# Default: '' (unauthenticated).
 #
 # Reference:
-# * https://github.com/Winetricks/winetricks/releases
-steam_srv_winetricks_release: '20250102'
+# * https://docs.github.com/en/authentication
+steam_srv_token: ''
 
-# Enable wine raw network access?
+# Enable raw network access?
 #
 # Allows applications that need to send and receive raw IP packets to do so in
 # wine. Disabled by default because it carries a potential security risk. Only
 # enable if wine application requires it.
 #
 # Default: False.
-steam_srv_wine_raw_network_enable: false
+steam_srv_raw_network: false
 
-###############################################################################
-# Metamod Options
-###############################################################################
-# Provides 'SourceHook' which enables plugins for source games to intercept
-# calls (enables mod support).
+# User that Steam will run under.
 #
-# Reference:
-# * https: //www.sourcemm.net
-
-# Enable Metamod installation?
+# 'steam' will automatically be created using vars/main.yml if required.
+# All other accounts are checked for existence.
 #
-# Metamod will be downloaded to /opt/metamod. Specific games must manually
-# install Metamod based on game requirements and locations.
-#
-# Default: False.
-steam_srv_metamod_enable: false
-
-# Metamod branch.
-#
-# Default: '1.12'.
-#
-# Reference:
-# * https: //www.sourcemm.net/downloads.php?branch=stable
-steam_srv_metamod_branch: '1.12'
-
-# Metamod build.
-#
-# Default: '7210'.
-#
-# Reference:
-# * https: //www.sourcemm.net/downloads.php?branch=stable
-steam_srv_metamod_build: '1219'
-
-###############################################################################
-# Sourcemod
-###############################################################################
-# SourceMod is server modification for any game that runs on the Half-Life 2
-# engine. It is a powerful, highly optimized platform for scripting plugins and
-# handling server administration. The default package comes with a base set of
-# plugins, but there are over 2,500 plugins in the community.
-#
-# Reference:
-# * https: //www.sourcemod.net
-
-# Enable Sourcemod installation?
-#
-# Sourcemod will be downloaded to /opt/sourcemod. Specific games must manually
-# install Sourcemod based on game requirements and locations.
-#
-# Default: False.
-steam_srv_sourcemod_enable: false
-
-# Sourcemod branch.
-#
-# Default: '1.12'.
-#
-# Reference:
-# * https: //www.sourcemod.net/downloads.php?branch=stable
-steam_srv_sourcemod_branch: '1.12'
-
-# Sourcemod build.
-#
-# Default: '7210'.
-#
-# Reference:
-# * https: //www.sourcemod.net/downloads.php?branch=stable
-steam_srv_sourcemod_build: '7210'
-
-###############################################################################
-# Steam User
-###############################################################################
-
-# User that steamcmd will run under.
-#
-# Enable steam_srv_create_user if this account is not externally managed.
-#
-# Locations (standard steam locations):
+# Standard steam locations:
 # * ~/.steam/steam -> ~/.local/share/Steam.
 # * ~/.steam/root -> ~/.local/share/Steam.
 # * ~/.local/share - steam/game state information (saves, user profiles).
 #
-# Default: 'steam'.
+# Default: 'navidrome'.
 steam_srv_user: 'steam'
 
-# Group that steamcmd will run under.
+# Group that Steam will run under.
 #
-# Enable steam_srv_create_user if this group is not externally managed.
+# 'steam' will automatically be created using vars/main.yml if required.
+# All other accounts are checked for existence.
 #
-# Default: 'steam'.
+# Default: 'navidrome'.
 steam_srv_group: 'steam'
 
-# Create steam_srv_user, steam_srv_group if not detected?
+###############################################################################
+# Config
+###############################################################################
+
+# Meta/Source Mod
+###############################################################################
+# Metamod and Sourcemod required matched branches to work correctly together.
 #
-# Applied via r_pufky.deb.users, see vars/main.yml for default user attributes.
+# Reference:
+# * https://www.sourcemm.net/downloads.php/?branch=stable
+# * https://www.sourcemod.net/downloads.php?branch=stable
+
+# Mod branch. Default: '1.12'.
+steam_cfg_mod_branch: '1.12'
+
+# Metamod build. Default: '1219'.
+steam_cfg_mm_build: '1219'
+
+# Sourcemod build. Default: '7223'.
+steam_cfg_sm_build: '7223'
+
+# Wine/Winetricks
+###############################################################################
+# Wine and Winetricks are always installed together.
 #
-# Default: True.
-steam_srv_create_user: true
+# Reference:
+# * https://github.com/Winetricks/winetricks/releases
+
+# Wine release.
+#
+# Values:
+#    stable: Annual release - for most games (default).
+#   staging: Pre-annual release with experimental patches - typically contains
+#            patches for recent releases. Use only if 'stable' does not work.
+#     devel: Bi-weekly release of development head - bleeding edge. Not
+#            recommended.
+#
+# Default: 'stable'.
+steam_cfg_wine_branch: 'stable'
+
+# Winetricks release.
+#
+# Always read release notes before updating versions. Role is only developed
+# for LTS releases.
+#
+# Default: '20260125'.
+#
+steam_cfg_wine_tricks: '20260125'

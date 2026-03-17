@@ -1,0 +1,78 @@
+---
+- name: 'Prepare'
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: 'Prepare | import role variables'
+      ansible.builtin.include_vars:
+        file: '{{
+            lookup("env", "MOLECULE_PROJECT_DIRECTORY") ~ "/vars/main.yml"
+          }}'
+
+    - name: 'Prepare | cache'
+      ansible.builtin.include_role:
+        name: 'r_pufky.data.test'
+        tasks_from: 'create_cache.yml'
+      vars:
+        test_name: 'Prepare cache'
+
+    - name: '{{ "Prepare | cache | Metamod " ~ steam___mm._version }}'
+      ansible.builtin.include_role:
+        name: 'r_pufky.data.test'
+        tasks_from: 'cache_url.yml'
+      vars:
+        test_name:
+          '{{ "Prepare | cache | Metamod " ~ steam___mm._version }}'
+        test_dest: '{{ steam___mm._package }}'
+        test_url: '{{ steam___mm._url }}'
+        test_mode: '0640'
+
+    - name: '{{ "Prepare | cache | Sourcemod " ~ steam___sm._version }}'
+      ansible.builtin.include_role:
+        name: 'r_pufky.data.test'
+        tasks_from: 'cache_url.yml'
+      vars:
+        test_name:
+          '{{ "Prepare | cache | Sourcemod " ~ steam___sm._version }}'
+        test_dest: '{{ steam___sm._package }}'
+        test_url: '{{ steam___sm._url }}'
+        test_mode: '0640'
+
+    - name: '{{ "Prepare | cache | winetricks " ~ steam___wine._tricks }}'
+      ansible.builtin.include_role:
+        name: 'r_pufky.data.test'
+        tasks_from: 'cache_url.yml'
+      vars:
+        test_name: '{{
+            "Prepare | cache | winetricks " ~ steam___wine._tricks
+          }}'
+        test_dest: '{{ steam___wine._package }}'
+        test_url: '{{ steam___wine._url }}'
+        test_mode: '0640'
+
+- name: 'Prepare'
+  hosts: 'all'
+  gather_facts: false
+  tasks:
+    - name: 'Prepare | import role variables'
+      ansible.builtin.include_vars:
+        file: '{{
+            lookup("env", "MOLECULE_PROJECT_DIRECTORY") ~ "/vars/main.yml"
+          }}'
+
+    - name: 'Prepare | inject | cached packages'
+      when: (url_inject_enable | default(false))
+      ansible.builtin.copy:
+        src: '{{
+            lookup("env", "MOLECULE_PROJECT_DIRECTORY") ~ "/molecule/cache/" ~
+            item
+          }}'
+        dest: '{{ "/tmp/" ~ item }}'
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+      loop:
+        - '{{ steam___mm._package }}'
+        - '{{ steam___sm._package }}'
+        - '{{ steam___wine._package }}'
