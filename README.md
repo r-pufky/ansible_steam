@@ -16,6 +16,7 @@ Detailed variable use documented in defaults. See usage for role operation.
 * [defaults][j] - User configurable options.
 
 ## Usage
+**en_US.UTF-8** locale will be installed.
 
 ### Feature Flags
 Tasks are gated by feature flags and executed in the following order.
@@ -23,9 +24,10 @@ Tasks are gated by feature flags and executed in the following order.
   Step | Flag                  | Notes
  ------|-----------------------|-------
   1    | steam_flg_apt_sources | Force required APT sources.
-  2    | steam_flg_metamod     | Install Metamod.
-  3    | steam_flg_sourcemod   | Install Sourcemod.
-  4    | steam_flg_wine        | Install wine/winetricks.
+  2    | steam_flg_update      | Force steamcmd/wine updates if already installed.
+  3    | steam_flg_metamod     | Install Metamod.
+  4    | steam_flg_sourcemod   | Install Sourcemod.
+  5    | steam_flg_wine        | Install wine/winetricks.
 
 ### Context Variables
 After successful execution the following variables are available for further

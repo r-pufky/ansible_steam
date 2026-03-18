@@ -30,8 +30,15 @@
   loop_control:
     label: '{{ item.path }}'
 
+- name: 'Metamod | filesystem | find current installation'
+  ansible.builtin.stat:
+    path: '{{ steam__mm._dest }}'
+  register: steam__meta_installed
+
 - name: 'Metamod | url | 🗘 metamod (~1 minute) 🗘'
-  when: not (url_inject_enable | default(false))
+  when: >
+    not (url_inject_enable | default(false)) and
+    not steam__meta_installed.stat.exists
   ansible.builtin.get_url:
     url: '{{ steam__mm._url }}'
     dest: '{{ "/tmp/" ~ steam__mm._package }}'
@@ -43,6 +50,7 @@
   until: steam__cmd is succeeded
 
 - name: '{{ "Metamod | filesystem | stage " ~ steam__mm._package }}'
+  when: not steam__meta_installed.stat.exists
   ansible.builtin.copy:
     remote_src: true
     src: '{{ "/tmp/" ~ steam__mm._package }}'

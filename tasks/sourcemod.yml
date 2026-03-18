@@ -30,8 +30,15 @@
   loop_control:
     label: '{{ item.path }}'
 
+- name: 'Sourcemod | filesystem | find current installation'
+  ansible.builtin.stat:
+    path: '{{ steam__sm._dest }}'
+  register: steam__source_installed
+
 - name: 'Sourcemod | url | 🗘 sourcemod (~1 minute) 🗘'
-  when: not (url_inject_enable | default(false))
+  when: >
+    not (url_inject_enable | default(false)) and
+    not steam__source_installed.stat.exists
   ansible.builtin.get_url:
     url: '{{ steam__sm._url }}'
     dest: '{{ "/tmp/" ~ steam__sm._package }}'
@@ -43,6 +50,7 @@
   until: steam__cmd is succeeded
 
 - name: '{{ "Sourcemod | filesystem | stage " ~ steam__sm._package }}'
+  when: not steam__source_installed.stat.exists
   ansible.builtin.copy:
     remote_src: true
     src: '{{ "/tmp/" ~ steam__sm._package }}'

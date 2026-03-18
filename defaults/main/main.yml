@@ -14,6 +14,9 @@
 # Default: True.
 steam_flg_apt_sources: true
 
+# 2. Force steamcmd/wine updates if already installed? Default: False.
+steam_flg_update: false
+
 # 2. Enable Metamod installation?
 #
 # Install size: ~5MB

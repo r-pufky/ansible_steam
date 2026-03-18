@@ -159,9 +159,9 @@ steam___sm: "{{ {} | r_pufky.data.v3(
     ),
 
     _package=steam___sm_package,
-    _opt_dir='/opt/metamod',
-    _src_dir='/opt/metamod/src',
-    _dest='/opt/metamod/src/' ~ steam___sm_package,
+    _opt_dir='/opt/sourcemod',
+    _src_dir='/opt/sourcemod/src',
+    _dest='/opt/sourcemod/src/' ~ steam___sm_package,
     _url=(
       steam___sm_repo_url ~ steam___release._mod_branch ~ '/' ~
       steam___sm_package

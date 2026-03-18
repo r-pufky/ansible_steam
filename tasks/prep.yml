@@ -5,6 +5,8 @@
 # Only use data annotations in role after merging role, defaults, runtime data.
 # Resolve system UID/GID and prep filesystem with required directories/packages
 # for all individual install options. Always install steamcmd.
+#
+# steamcmd expected en_US.UTF-8 locale installed.
 
 - name: 'Prep | fact | force steam_flg_metamod=true (steam_flg_sourcemod)'
   when: steam_flg_sourcemod
@@ -30,6 +32,7 @@
         _wine_branch=steam_cfg_wine_branch,
         _wine_tricks=steam_cfg_wine_tricks,
 
+        _wine_package='winehq-' ~ steam_cfg_wine_branch,
         _mm_package=(
           'mmsource-' ~ steam_cfg_mod_branch ~ '.0-git' ~
           steam_cfg_mm_build ~ '-linux.tar.gz'
@@ -79,6 +82,11 @@
         _url=steam___wine_tricks_repo_url ~ steam__cfg._wt_package,
       ) }}"
 
+- name: 'Prep | locale | install en_US.UTF-8'
+  community.general.locale_gen:
+    name: 'en_US.UTF-8'
+    state: 'present'
+
 - name: 'Prep | debconf | set licensed viewed'
   ansible.builtin.debconf:
     name: 'steam'
@@ -105,10 +113,28 @@
     - '-amd64'
     - '-i386'
 
-- name: 'Install | enable i386 architecture support'
+- name: 'Prep | enable i386 architecture support'
   ansible.builtin.command: 'dpkg --add-architecture i386'
   args:
     creates: '/var/lib/dpkg/arch'
+
+- name: 'Prep | apt | query installed packages'
+  ansible.builtin.package_facts:
+    manager: 'apt'
+
+- name: 'Prep | fact | set pre-installed flags'
+  ansible.builtin.set_fact:
+    steam__cfg: "{{ steam__cfg | r_pufky.data.v3(
+
+        _cmd_installed=(
+          true if 'steamcmd:i386' in ansible_facts['packages'] else false
+        ),
+        _wine_installed=(
+          true
+          if steam__cfg._wine_package in ansible_facts['packages'] else
+          false
+        ),
+      ) }}"
 
 - name: 'Prep | packages'
   when: steam_flg_apt_sources
@@ -193,10 +219,12 @@
 # * https://developer.valvesoftware.com/wiki/SteamCMD#Linux
 
 - name: 'Prep | steamcmd | 🗘 updating (~2 minutes) 🗘'
+  when: steam_flg_update or not steam__cfg._cmd_installed
   ansible.builtin.debug:
     msg: 'steamcmd is being updated (~2 minutes).'
 
 - name: 'Prep | steamcmd | login quit'
+  when: steam_flg_update or not steam__cfg._cmd_installed
   ansible.builtin.shell: >-
     /usr/games/steamcmd
     +login anonymous

@@ -11,7 +11,7 @@
   ansible.builtin.import_tasks: 'sourcemod.yml'
 
 - name: 'Wine'
-  when: steam_flg_wine
+  when: steam_flg_wine and (steam_flg_update or not steam__cfg._wine_installed)
   ansible.builtin.import_tasks: 'wine.yml'
 
 - name: 'Export resolved variables'

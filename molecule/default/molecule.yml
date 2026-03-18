@@ -35,6 +35,7 @@ provisioner:
         steam_flg_metamod: true
         steam_flg_sourcemod: true
         steam_srv_raw_network: true
+        steam_flg_update: false
 platforms:
   - name: 'steam-default'
     box: 'debian/trixie64'
