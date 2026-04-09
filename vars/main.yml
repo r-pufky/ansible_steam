@@ -139,9 +139,9 @@ steam___mm: "{{ {} | r_pufky.data.v3(
     ),
 
     _package=steam___mm_package,
-    _opt_dir='/opt/metamod',
-    _src_dir='/opt/metamod/src',
-    _dest='/opt/metamod/src/' ~ steam___sm_package,
+    _opt_d='/opt/metamod',
+    _src_d='/opt/metamod/src',
+    _dest='/opt/metamod/src/' ~ steam___mm_package,
     _url=(
       steam___mm_repo_url ~ steam___release._mod_branch ~ '/' ~
       steam___mm_package
@@ -159,8 +159,8 @@ steam___sm: "{{ {} | r_pufky.data.v3(
     ),
 
     _package=steam___sm_package,
-    _opt_dir='/opt/sourcemod',
-    _src_dir='/opt/sourcemod/src',
+    _opt_d='/opt/sourcemod',
+    _src_d='/opt/sourcemod/src',
     _dest='/opt/sourcemod/src/' ~ steam___sm_package,
     _url=(
       steam___sm_repo_url ~ steam___release._mod_branch ~ '/' ~
@@ -192,8 +192,8 @@ steam___wine: "{{ {} | r_pufky.data.v3(
     _branch=steam___release._wine_branch,
     _tricks=steam___release._wine_tricks,
     _package=steam___wine_tricks_package,
-    _opt_dir='/opt/winetricks',
-    _src_dir='/opt/winetricks/src',
+    _opt_d='/opt/winetricks',
+    _src_d='/opt/winetricks/src',
     _dest='/opt/winetricks/src/' ~ steam___release._wine_tricks,
     _url=steam___wine_tricks_repo_url ~ steam___wine_tricks_package,
   ) }}"

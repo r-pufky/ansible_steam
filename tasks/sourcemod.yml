@@ -7,7 +7,7 @@
 
 - name: 'Sourcemod | filesystem | set system directories'
   ansible.builtin.file:
-    path: '{{ steam__sm._src_dir }}'  # src_dir includes opt_dir.
+    path: '{{ steam___sm._src_d }}'  # src_dir includes opt_dir.
     owner: 'root'
     group: 'root'
     mode: '0755'
@@ -15,7 +15,7 @@
 
 - name: 'Sourcemod | filesystem | find previous installations'
   ansible.builtin.find:
-    paths: '{{ steam__sm._src_dir }}'
+    paths: '{{ steam___sm._src_d }}'
     file_type: 'file'
     recurse: false
     excludes:
@@ -37,7 +37,7 @@
 
 - name: 'Sourcemod | url | 🗘 sourcemod (~1 minute) 🗘'
   when: >
-    not (url_inject_enable | default(false)) and
+    not (molecule_flg_inject | default(false)) and
     not steam__source_installed.stat.exists
   ansible.builtin.get_url:
     url: '{{ steam__sm._url }}'

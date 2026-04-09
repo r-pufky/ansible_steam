@@ -53,7 +53,7 @@
         _package=steam__cfg._mm_package,
         _version=steam__cfg._mod_branch ~ '.' ~ steam__cfg._mm_build,
 
-        _dest=steam___mm._src_dir ~ '/' ~ steam__cfg._mm_package,
+        _dest=steam___mm._src_d ~ '/' ~ steam__cfg._mm_package,
         _url=(
           steam___mm_repo_url ~ steam__cfg._mod_branch ~ '/' ~
           steam__cfg._mm_package
@@ -66,7 +66,7 @@
         _package=steam__cfg._sm_package,
         _version=steam__cfg._mod_branch ~ '.' ~ steam__cfg._sm_build,
 
-        _dest=steam___sm._src_dir ~ '/' ~ steam__cfg._sm_package,
+        _dest=steam___sm._src_d ~ '/' ~ steam__cfg._sm_package,
         _url=(
           steam___sm_repo_url ~ steam__cfg._mod_branch ~ '/' ~
           steam__cfg._sm_package
@@ -78,7 +78,7 @@
         _tricks=steam__cfg._wine_tricks,
         _package=steam__cfg._wt_package,
 
-        _dest=steam___wine._src_dir ~ '/' ~ steam__cfg._wine_tricks,
+        _dest=steam___wine._src_d ~ '/' ~ steam__cfg._wine_tricks,
         _url=steam___wine_tricks_repo_url ~ steam__cfg._wt_package,
       ) }}"
 
@@ -137,7 +137,6 @@
       ) }}"
 
 - name: 'Prep | packages'
-  when: steam_flg_apt_sources
   ansible.builtin.include_role:
     name: 'r_pufky.deb.apt'
   vars:

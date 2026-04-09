@@ -30,7 +30,7 @@ provisioner:
   inventory:
     group_vars:
       all:
-        url_inject_enable: true
+        molecule_flg_inject: true
         steam_flg_wine: true
         steam_flg_metamod: true
         steam_flg_sourcemod: true
