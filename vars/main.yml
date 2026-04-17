@@ -87,6 +87,7 @@ steam___apt_sources:
 steam___wine_packages:
   - 'xvfb'  # Lightweight window manager.
   - 'winbind'  # Windows user/group resolution.
+  - 'cabextract'  # VC redistributable package extraction.
   - 'libasound2-plugins'  # asound.
   - 'libasound2-plugins:i386'  # asound i386.
 

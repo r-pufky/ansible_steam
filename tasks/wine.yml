@@ -25,6 +25,9 @@
   args:
     executable: '/bin/bash'
     chdir: '{{ steam__srv._home }}'
+  environment:
+    WINEARCH: 'win64'
+    WINEPREFIX: '{{ steam__srv._home ~ "/.wine" }}'
   changed_when: false
   become: true
   become_user: '{{ steam__srv._user }}'
@@ -33,7 +36,10 @@
   ansible.builtin.shell: '/usr/bin/wineboot --update'
   args:
     executable: '/bin/bash'
-    chdir: '{{  steam__srv._home }}'
+    chdir: '{{ steam__srv._home }}'
+  environment:
+    WINEARCH: 'win64'
+    WINEPREFIX: '{{ steam__srv._home ~ "/.wine" }}'
   changed_when: false
   become: true
   become_user: '{{  steam__srv._user }}'
@@ -101,3 +107,10 @@
     mode: '0755'
     directory_mode: '0755'
     force: true
+
+- name: 'Wine | cmd | 🗘 update winetricks (~2 minutes) 🗘'
+  ansible.builtin.shell: '/usr/local/bin/winetricks --self-update'
+  args:
+    executable: '/bin/bash'
+    chdir: '{{ steam__srv._home }}'
+  changed_when: false

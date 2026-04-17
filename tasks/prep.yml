@@ -101,6 +101,7 @@
     name: '{{ steam___ansible_packages }}'
     update_cache: true
     state: 'present'
+  changed_when: false  # Unwrapped APT always returns changed.
 
 - name: 'Prep | debconf | set licensed viewed'
   ansible.builtin.debconf:
