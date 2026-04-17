@@ -3,7 +3,38 @@
 # Feature Flags
 ###############################################################################
 
-# 1. Automatically add Debian APT sources?
+# 1. Is this role applied to a container?
+#
+# Decision: manual user setting - There is currently no good way to
+#     deterministically and consistently detect if a remote host is a
+#     container outside of common cases.
+#
+# Hosts marked as containers will automatically disable:
+#   * steam_flg_cdn
+#
+# Special Case:
+#   * deb_flg_container=true forces steam_flg_container=true.
+#
+# Default: False.
+steam_flg_container: false
+
+# 2. Force Static IP for client-download.steampowered.com?
+#
+# client-download.steampowered.com is used for internet connectivity checks and
+# to download data. CDN DNS updates may break this for up to 72 hours. steamcmd
+# will fail with 'Please confirm your network connection and try again.'.
+#
+# Enabling resolves media.steampowered.com and statically sets /etc/hosts which
+# fix this specific issue. Requires steam_flg_container=false.
+#
+# This should ONLY be used as a one-off and not set by default as changing IP's
+# will result in steamcmd breaking again in the future.
+#
+# Reference:
+# * https://r-pufky.github.io/docs/game/steam/troubleshooting
+steam_flg_cdn: false
+
+# 3. Automatically add Debian APT sources?
 #
 # Additional APT components (contrib, non-free, non-free-firmware) are required
 # for Steam installation. winehq sources are installed if steam_flg_wine=true.
@@ -14,10 +45,10 @@
 # Default: True.
 steam_flg_apt_sources: true
 
-# 2. Force steamcmd/wine updates if already installed? Default: False.
+# 4. Force steamcmd/wine updates if already installed? Default: False.
 steam_flg_update: false
 
-# 2. Enable Metamod installation?
+# 5. Enable Metamod installation?
 #
 # Install size: ~5MB
 #
@@ -27,7 +58,7 @@ steam_flg_update: false
 # Default: False.
 steam_flg_metamod: false
 
-# 3. Enable Sourcemod installation?
+# 6. Enable Sourcemod installation?
 #
 # Install size: ~200MB
 #
@@ -38,7 +69,7 @@ steam_flg_metamod: false
 # Default: False.
 steam_flg_sourcemod: false
 
-# 4. Install wine/winetricks (windows support)?
+# 7. Install wine/winetricks (windows support)?
 #
 # Install size: ~2GB
 #
@@ -117,14 +148,14 @@ steam_srv_group: 'steam'
 # * https://www.sourcemm.net/downloads.php/?branch=stable
 # * https://www.sourcemod.net/downloads.php?branch=stable
 
-# Mod branch. Default: '1.12'.
-steam_cfg_mod_branch: '1.12'
+# Mod branch. Default: '1.12.0'.
+steam_cfg_mod_branch: '1.12.0'
 
-# Metamod build. Default: '1219'.
-steam_cfg_mm_build: '1219'
+# Metamod build. Default: '1221'.
+steam_cfg_mm_build: '1221'
 
-# Sourcemod build. Default: '7223'.
-steam_cfg_sm_build: '7223'
+# Sourcemod build. Default: '7228'.
+steam_cfg_sm_build: '7228'
 
 # Wine/Winetricks
 ###############################################################################

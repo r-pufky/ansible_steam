@@ -8,6 +8,11 @@
 #
 # steamcmd expected en_US.UTF-8 locale installed.
 
+- name: 'Prep | fact | force steam_flg_container=true (deb_flg_container)'
+  when: deb_flg_container | default(false)
+  ansible.builtin.set_fact:
+    steam_flg_container: true
+
 - name: 'Prep | fact | force steam_flg_metamod=true (steam_flg_sourcemod)'
   when: steam_flg_sourcemod
   ansible.builtin.set_fact:
@@ -24,7 +29,7 @@
         _group=steam_srv_group,
       ) }}"
     # Pre-parse multi-variant configurations.
-    steam__cfg: "{{ steam___release | r_pufky.data.v3(
+    steam__cfg: "{{ {} | r_pufky.data.v3(
 
         _mod_branch=steam_cfg_mod_branch,
         _mm_build=steam_cfg_mm_build,
@@ -33,33 +38,42 @@
         _wine_tricks=steam_cfg_wine_tricks,
 
         _wine_package='winehq-' ~ steam_cfg_wine_branch,
+
+        _mm_version=steam_cfg_mod_branch ~ '.' ~ steam_cfg_mm_build,
+        _mm_version_pkg=steam_cfg_mod_branch ~ '-git' ~ steam_cfg_mm_build,
         _mm_package=(
-          'mmsource-' ~ steam_cfg_mod_branch ~ '.0-git' ~
-          steam_cfg_mm_build ~ '-linux.tar.gz'
+          'mmsource-' ~ steam_cfg_mod_branch ~ '-git' ~ steam_cfg_mm_build ~
+          '-linux.tar.gz'
         ),
+
+        _sm_version=steam_cfg_mod_branch ~ '.' ~ steam_cfg_sm_build,
+        _sm_version_pkg=steam_cfg_mod_branch ~ '-git' ~ steam_cfg_sm_build,
         _sm_package=(
-          'sourcemod-' ~ steam_cfg_mod_branch ~ '.0-git' ~
-          steam_cfg_sm_build ~ '-linux.tar.gz'
+          'sourcemod-' ~ steam_cfg_mod_branch ~ '-git' ~ steam_cfg_sm_build ~
+          '-linux.tar.gz'
         ),
+
         _wt_package=steam_cfg_wine_tricks ~ '.tar.gz',
       ) }}"
 
+
 - name: 'Prep | fact | generate runtime config'
   ansible.builtin.set_fact:
-    steam__mm: "{{ steam___mm | r_pufky.data.v3(
+    steam__mm: "{{ {} | r_pufky.data.v3(
 
         _branch=steam__cfg._mod_branch,
         _build=steam__cfg._mm_build,
+        _version=steam__cfg._mm_version,
+        _version_pkg=steam__cfg._mm_version_pkg,
         _package=steam__cfg._mm_package,
-        _version=steam__cfg._mod_branch ~ '.' ~ steam__cfg._mm_build,
 
         _dest=steam___mm._src_d ~ '/' ~ steam__cfg._mm_package,
         _url=(
-          steam___mm_repo_url ~ steam__cfg._mod_branch ~ '/' ~
+          steam___mm_repo_url ~ steam__cfg._mm_version ~ '/' ~
           steam__cfg._mm_package
         ),
       ) }}"
-    steam__sm: "{{ steam___sm | r_pufky.data.v3(
+    steam__sm: "{{ {} | r_pufky.data.v3(
 
         _branch=steam__cfg._mod_branch,
         _build=steam__cfg._sm_build,
@@ -68,11 +82,11 @@
 
         _dest=steam___sm._src_d ~ '/' ~ steam__cfg._sm_package,
         _url=(
-          steam___sm_repo_url ~ steam__cfg._mod_branch ~ '/' ~
+          steam___sm_repo_url ~ steam__cfg._sm_version ~ '/' ~
           steam__cfg._sm_package
         ),
       ) }}"
-    steam__wine: "{{ steam___wine | r_pufky.data.v3(
+    steam__wine: "{{ {} | r_pufky.data.v3(
 
         _branch=steam__cfg._wine_branch,
         _tricks=steam__cfg._wine_tricks,
@@ -82,9 +96,10 @@
         _url=steam___wine_tricks_repo_url ~ steam__cfg._wt_package,
       ) }}"
 
-- name: 'Prep | locale | install en_US.UTF-8'
-  community.general.locale_gen:
-    name: 'en_US.UTF-8'
+- name: 'Prep | install pre-requisite packages'
+  ansible.builtin.apt:
+    name: '{{ steam___ansible_packages }}'
+    update_cache: true
     state: 'present'
 
 - name: 'Prep | debconf | set licensed viewed'
@@ -156,7 +171,13 @@
         ) | select ()
       }}'
     apt_srv_sources_list_disable: true
+    apt_srv_auto_grub_boot: true
     apt_srv_package_update_cache: true
+
+- name: 'Prep | locale | install en_US.UTF-8'
+  community.general.locale_gen:
+    name: 'en_US.UTF-8'
+    state: 'present'
 
 - name: '{{ "Prep | account | query user " ~ steam__srv._user }}'
   ansible.builtin.command: '{{ "id " ~ steam__srv._user }}'
@@ -212,10 +233,52 @@
 ###############################################################################
 # steamcmd
 ###############################################################################
-# steamcmd is force updated on login.
+# steamcmd is force updated on login. steamcmd may fail to detect an Internet
+# connection during CDN DNS updates, statically set if enabled or ensure that
+# it is removed.
+#
+# Modifying /etc/hosts requires VM or bare-metal.
 #
 # Reference:
 # * https://developer.valvesoftware.com/wiki/SteamCMD#Linux
+# * https://r-pufky.github.io/docs/game/steam/troubleshooting
+
+- name: 'Prep | set /etc/hosts'
+  when: not steam_flg_container
+  block:
+    - name: 'Prep | cmd | resolve media.steampowered.com'
+      when: steam_flg_cdn
+      ansible.builtin.shell: >
+        set -o pipefail &&
+        dig +short media.steampowered.com |
+          grep -E -o '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1
+      args:
+        executable: '/bin/bash'
+      changed_when: false
+      register: steam__cmd
+
+    - name: 'Prep | fact | parse CDN IP'
+      ansible.builtin.set_fact:
+        steam__cdn: '{{ steam__cmd.stdout | default("") | trim }}'
+
+    # yamllint disable rule:line-length
+    - name: '{{ "Prep | filesystem | set CDN=" ~ steam__cdn }}'
+      when: steam_flg_cdn and steam__cdn | length > 0
+      ansible.builtin.shell: >-
+        set -o pipefail &&
+        grep -qF "client-download.steampowered.com" /etc/hosts ||
+        echo "{{ steam__cdn }}  client-download.steampowered.com" >> /etc/hosts
+      args:
+        executable: '/bin/bash'
+      register: steam__hosts
+      changed_when: steam__hosts.rc == 0
+
+    - name: 'Prep | filesystem | set CDN=DNS'
+      when: not steam_flg_cdn
+      ansible.builtin.lineinfile:
+        path: '/etc/hosts'
+        regexp: '^.*client-download\.steampowered\.com.*$'
+        state: 'absent'
 
 - name: 'Prep | steamcmd | 🗘 updating (~2 minutes) 🗘'
   when: steam_flg_update or not steam__cfg._cmd_installed

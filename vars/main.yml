@@ -19,9 +19,9 @@ steam___release: "{{ {} | r_pufky.data.v3(
 
     _date='2026-03-17',
     _debian='trixie',
-    _mod_branch='1.12',
-    _metamod_build='1219',
-    _sourcemod_build='7223',
+    _mod_branch='1.12.0',
+    _metamod_build='1221',
+    _sourcemod_build='7228',
     _wine_branch='stable',
     _wine_tricks='20260125',
   ) }}"
@@ -33,11 +33,17 @@ steam___release: "{{ {} | r_pufky.data.v3(
 
 steam___packages:
   - 'steamcmd'
+
+steam___ansible_packages:
+  - 'locales'  # steam requires en_US.UTF-8 installed.
+  - 'python3-apt'  # package_facts.
+  - 'dnsutils'  # dig.
   - 'acl'  # ansible become: {USER} support.
   - 'gnupg2'  # GPG signature validation.
   - 'tar'  # tar archives.
   - 'ca-certificates'  # SSL support for ansible.builtin.get_url.
   - 'xz-utils'  # xz archives.
+  - 'unzip'  # unarchive.
 
 steam___apt_sources:
   - name: 'debian'
@@ -114,38 +120,37 @@ steam___wine_sources:
 # * https://www.metamodsource.net/downloads.php
 # * https://www.sourcemod.net/downloads.php
 
-steam___mm_repo_url: 'https://mms.alliedmods.net/mmsdrop/'
+steam___mm_repo_url:
+  'https://github.com/alliedmodders/metamod-source/releases/download/'
 steam___mm_version:
-  '{{ steam___release._mod_branch ~ "-" ~ steam___release._metamod_build }}'
-steam___mm_package: '{{
-    "mmsource-" ~ steam___release._mod_branch ~ ".0-git" ~
-    steam___release._metamod_build ~ "-linux.tar.gz"
-  }}'
+  '{{ steam___release._mod_branch ~ "." ~ steam___release._metamod_build }}'
+steam___mm_version_pkg:
+  '{{ steam___release._mod_branch ~ "-git" ~ steam___release._metamod_build }}'
+steam___mm_package:
+  '{{ "mmsource-" ~ steam___mm_version_pkg ~ "-linux.tar.gz" }}'
 
-steam___sm_repo_url: 'https://sm.alliedmods.net/smdrop/'
+steam___sm_repo_url:
+  'https://github.com/alliedmodders/sourcemod/releases/download/'
 steam___sm_version:
-  '{{ steam___release._mod_branch ~ "-" ~ steam___release._sourcemod_build }}'
-steam___sm_package: '{{
-    "sourcemod-" ~ steam___release._mod_branch ~ ".0-git" ~
-    steam___release._sourcemod_build ~ "-linux.tar.gz"
+  '{{ steam___release._mod_branch ~ "." ~ steam___release._sourcemod_build }}'
+steam___sm_version_pkg: '{{
+    steam___release._mod_branch ~ "-git" ~ steam___release._sourcemod_build
   }}'
+steam___sm_package:
+  '{{ "sourcemod-" ~ steam___sm_version_pkg ~ "-linux.tar.gz" }}'
 
 steam___mm: "{{ {} | r_pufky.data.v3(
 
     _branch=steam___release._mod_branch,
     _build=steam___release._metamod_build,
-    _version=(
-      steam___release._mod_branch ~ '.' ~ steam___release._metamod_build
-    ),
-
+    _version=steam___mm_version,
+    _version_pkg=steam___mm_version_pkg,
     _package=steam___mm_package,
+
     _opt_d='/opt/metamod',
     _src_d='/opt/metamod/src',
     _dest='/opt/metamod/src/' ~ steam___mm_package,
-    _url=(
-      steam___mm_repo_url ~ steam___release._mod_branch ~ '/' ~
-      steam___mm_package
-    ),
+    _url=steam___mm_repo_url ~ steam___mm_version ~ '/' ~ steam___mm_package,
     _rel_dirs=['/addons/metamod'],
     _rel_files=['metamod.vdf','metamod_x64.vdf'],
   ) }}"
@@ -154,18 +159,14 @@ steam___sm: "{{ {} | r_pufky.data.v3(
 
     _branch=steam___release._mod_branch,
     _build=steam___release._sourcemod_build,
-    _version=(
-      steam___release._mod_branch ~ '.' ~ steam___release._sourcemod_build
-    ),
-
+    _version=steam___sm_version,
+    _version_pkg=steam___sm_version_pkg,
     _package=steam___sm_package,
+
     _opt_d='/opt/sourcemod',
     _src_d='/opt/sourcemod/src',
     _dest='/opt/sourcemod/src/' ~ steam___sm_package,
-    _url=(
-      steam___sm_repo_url ~ steam___release._mod_branch ~ '/' ~
-      steam___sm_package
-    ),
+    _url=steam___sm_repo_url ~ steam___sm_version ~ '/' ~ steam___sm_package,
     _rel_dirs=['/addons/sourcemod','/cfg/sourcemod'],
     _rel_files=['/addons/metamod/sourcemod.vdf'],
   ) }}"

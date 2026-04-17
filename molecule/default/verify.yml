@@ -4,6 +4,23 @@
   gather_facts: false
   become: true
   tasks:
+    - name: 'Verify | test | /etc/hosts'
+      ansible.builtin.command:
+        "grep -i 'client-download.steampowered.com' /etc/hosts"
+      changed_when: false
+      failed_when: false
+      register: steam__test_cdn
+
+    - name: 'Verify | assert | CDN defined'
+      ansible.builtin.assert:
+        quiet: true
+        that: steam__test_cdn.rc == 0
+        fail_msg: |
+
+          ✘ Custom CDN entry should exist in /etc/hosts.
+
+          {{ steam__test_cdn.stdout }} {{ steam__test_cdn.rc }}
+
     - name: 'Verify | cmd | steamcmd test'
       ansible.builtin.shell: >-
         /usr/games/steamcmd

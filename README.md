@@ -10,6 +10,10 @@ Requires [r_pufky.game][g] galaxy-ng collection. See
 * Sourcemod: ~200MB
 * Wine: ~2GB
 
+> VM's are highly recommended to provide strong isolation. Many servers require
+> low-level access to networking and hardware. Containers may be enabled but
+> are not supported for issues.
+
 ## Role Variables
 Detailed variable use documented in defaults. See usage for role operation.
 
@@ -23,11 +27,13 @@ Tasks are gated by feature flags and executed in the following order.
 
   Step | Flag                  | Notes
  ------|-----------------------|-------
-  1    | steam_flg_apt_sources | Force required APT sources.
-  2    | steam_flg_update      | Force steamcmd/wine updates if already installed.
-  3    | steam_flg_metamod     | Install Metamod.
-  4    | steam_flg_sourcemod   | Install Sourcemod.
-  5    | steam_flg_wine        | Install wine/winetricks.
+  1    | steam_flg_container   | Deploy container specific settings.
+  2    | steam_flg_cdn         | Statically set Steam CDN IP.
+  3    | steam_flg_apt_sources | Force required APT sources.
+  4    | steam_flg_update      | Force steamcmd/wine updates if already installed.
+  5    | steam_flg_metamod     | Install Metamod.
+  6    | steam_flg_sourcemod   | Install Sourcemod.
+  7    | steam_flg_wine        | Install wine/winetricks.
 
 ### Context Variables
 After successful execution the following variables are available for further
